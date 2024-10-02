@@ -1,0 +1,11 @@
+id,content,tags
+1,"AAPL: Apple Inc. - Price: $150.25, Market Cap: $2.5T","Technology,Consumer Electronics,earnings_soon,innovation_leader"
+2,"MSFT: Microsoft Corporation - Price: $305.75, Market Cap: $2.1T","Technology,Software Infrastructure,cloud_growth,ai_potential"
+3,"AMZN: Amazon.com Inc. - Price: $3200.50, Market Cap: $1.6T","Consumer Cyclical,Internet Retail,e_commerce_giant,aws_growth"
+4,"GOOGL: Alphabet Inc. - Price: $2750.25, Market Cap: $1.8T","Communication Services,Internet Content & Information,ad_revenue_focus,ai_leader"
+5,"FB: Meta Platforms Inc. - Price: $325.50, Market Cap: $900B","Communication Services,Internet Content & Information,metaverse_bet,regulatory_concerns"
+6,"TSLA: Tesla Inc. - Price: $775.25, Market Cap: $750B","Consumer Cyclical,Auto Manufacturers,ev_leader,high_volatility"
+7,"BRK.A: Berkshire Hathaway Inc. - Price: $430000.00, Market Cap: $650B","Financial Services,Insurance,value_investing,cash_rich"
+8,"JPM: JPMorgan Chase & Co. - Price: $150.75, Market Cap: $450B","Financial Services,Banks,interest_rate_sensitive,trading_revenue"
+9,"JNJ: Johnson & Johnson - Price: $165.25, Market Cap: $430B","Healthcare,Drug Manufacturers,dividend_aristocrat,covid_vaccine"
+10,"WMT: Walmart Inc. - Price: $140.50, Market Cap: $400B","Consumer Defensive,Discount Stores,e_commerce_growth,inflation_hedge"

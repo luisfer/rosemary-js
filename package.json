@@ -1,0 +1,43 @@
+{
+    "name": "rosemary-js",
+    "version": "1.0.0",
+    "description": "A knowledge management tool for organizing and connecting notes.",
+    "main": "src/Rosemary.js",
+    "bin": {
+        "rosemary": "src/cli.js"
+    },
+    "scripts": {
+        "start": "node src/cli.js",
+        "test": "jest",
+        "build": "echo \"Building the project...\" && exit 0"
+    },
+    "keywords": [
+        "notes",
+        "knowledge",
+        "management",
+        "csv",
+        "markdown"
+    ],
+    "author": "Luis Fernando Romero Calero",
+    "license": "MIT",
+    "dependencies": {
+        "chalk": "^4.0.0",
+        "commander": "^8.0.0",
+        "csv-writer": "^1.6.0",
+        "csv-parser": "^3.0.0",
+        "fuse.js": "^7.0.0",
+        "inquirer": "^8.0.0",
+        "marked": "^14.1.2"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/luisfer/rosemary-js.git"
+    },
+    "bugs": {
+        "url": "https://github.com/luisfer/rosemary-js/issues"
+    },
+    "homepage": "https://github.com/luisfer/rosemary-js#readme",
+    "devDependencies": {
+        "jest": "^29.7.0"
+    }
+}
