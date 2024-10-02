@@ -10,7 +10,7 @@ Rosemary.js is a flexible and powerful knowledge management library that serves 
 
 Rosemary.js doesn't dictate how you should organize your information. Instead, it offers a set of tools that you can use to create your own unique knowledge management system. Whether you're organizing research notes, analyzing stock market data, or connecting seemingly unrelated ideas, Rosemary.js adapts to your needs.
 
-We're excited to see the creative ways you'll use Rosemary.js! Every dataset, every collection of ideas, and every problem space is unique. Rosemary.js is designed to be flexible enough to handle this diversity while providing powerful tools for connection and analysis.
+I'm excited to see the creative ways you'll use Rosemary.js! Every dataset, every collection of ideas, and every problem space is unique. Rosemary.js is designed to be flexible enough to handle this diversity while providing powerful tools for connection and analysis.
 
 ## 🌱 Growing Together
 
@@ -155,7 +155,7 @@ The Creative Writing Wizard provides an interactive interface for:
 
 ## Upcoming Features
 
-We're constantly working to improve Rosemary.js. Here are some features we're excited about:
+I will be constantly working to improve Rosemary.js. Here are some features I am excited about:
 
 - **Visualization Module**: Generate mind maps and network graphs of your knowledge base.
 - **Leaf Templates**: Create and use templates for common types of information.
@@ -177,11 +177,7 @@ Join the Rosemary.js community! Here's how you can get involved:
 
 Rosemary.js versions are named after aromatic herbs and spices, reflecting the library's goal of cultivating a rich and flavorful knowledge base. Each major version will be named after a new herb or spice, with minor versions using variations or subspecies.
 
-Current Version: Rosemary Tuscan Blue (1.0)
-
-## Documentation
-
-For full documentation, visit our [GitHub Wiki](https://github.com/luisfer/rosemary-js/wiki).
+Current Version: Rosemary Tuscan Blue (1.0.0)
 
 ## Contributing
 
@@ -198,7 +194,7 @@ Rosemary.js is maintained by me, Luisfer Romero Calero, a creative software deve
 🔍 **Open to New Opportunities**: I'm currently exploring new challenges in software development. Please reach out if you want to work together, or just to chat about software development!
 
 - 📧 Email: luisfer.romero.calero@gmail.com
-- 🔗 GitHub: [github.com/luisfer](https://github.com/luisfer)
+- 💻 GitHub: [github.com/luisfer](https://github.com/luisfer)
 - 🔗 LinkedIn: [linkedin.com/in/luisferromero](https://www.linkedin.com/in/luis-fernando-romero-calero-2830049b/)
 
 ---

@@ -26,4 +26,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-## [First version] - 2024-10-02
+## [1.0.0 Tuscan Blue] - 2024-10-02
