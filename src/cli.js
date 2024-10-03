@@ -8,7 +8,14 @@ const inquirer = require('inquirer');
 const chalk = require('chalk');
 
 const brain = new Rosemary();
-const dataFile = path.join(process.cwd(), 'data', 'rosemary-data.json');
+const dataDir = path.join(process.cwd(), 'data');
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
+const dataFile = path.join(dataDir, 'rosemary-data.json');
+if (!fs.existsSync(dataFile)) {
+  fs.writeFileSync(dataFile, '{}', 'utf8');
+}
 
 // Load existing data if available
 if (fs.existsSync(dataFile)) {
