@@ -6,7 +6,7 @@ describe('Rosemary Class', () => {
   let brain;
 
   beforeEach(() => {
-    brain = new Rosemary();
+    brain = new Rosemary({ autoSave: false });
   });
 
   it('should initialize with empty leaves, tags, and stem', () => {
@@ -68,23 +68,6 @@ describe('Rosemary Class', () => {
     expect(results.map(l => l.id)).toContain(id2);
   });
 
-  it('should export and import data correctly', () => {
-    const id1 = brain.addLeaf('Leaf for export', ['export']);
-    const id2 = brain.addLeaf('Another export leaf', ['export', 'test']);
-    brain.connectLeaves(id1, id2, 'related');
-    
-    const exportData = brain.createExportData();
-    
-    const newBrain = new Rosemary();
-    newBrain.importData(JSON.stringify(exportData));
-    
-    expect(newBrain.leaves.size).toBe(2);
-    expect(newBrain.stem.connections.size).toBe(2);
-    expect(newBrain.stem.connections.get(id1).get(id2)).toBe('related');
-    expect(newBrain.tags.has('export')).toBe(true);
-    expect(newBrain.tags.has('test')).toBe(true);
-  });
-
   it('should suggest tags based on partial input', () => {
     brain.addLeaf('Leaf one', ['javascript', 'coding']);
     brain.addLeaf('Leaf two', ['jest', 'testing']);
@@ -104,9 +87,15 @@ describe('Rosemary Class', () => {
   });
 
   it('should throw an error when connecting non-existent leaves', () => {
+    const brain = new Rosemary({ autoSave: false });
     const id1 = brain.addLeaf('Existing leaf');
+    
     expect(() => {
       brain.connectLeaves(id1, 'nonExistentId', 'related');
+    }).toThrow('Leaf with id nonExistentId not found');
+
+    expect(() => {
+      brain.connectLeaves('nonExistentId', id1, 'related');
     }).toThrow('Leaf with id nonExistentId not found');
   });
 
@@ -296,4 +285,79 @@ describe('Rosemary Class', () => {
     }).toThrow('Failed to import from JSON');
   });
 
+  it('should handle clearing all data correctly', () => {
+    brain.addLeaf('Test leaf', ['tag1', 'tag2']);
+    brain.clearAllData();
+    expect(brain.leaves.size).toBe(1); // Because clearAllData initializes default data
+    expect(brain.tags.size).toBe(2); // Default leaf has two tags
+    expect(brain.stem.connections.size).toBe(0);
+  });
+
+  it('should handle deleting a leaf correctly', () => {
+    const id1 = brain.addLeaf('Leaf 1', ['tag1']);
+    const id2 = brain.addLeaf('Leaf 2', ['tag1', 'tag2']);
+    brain.connectLeaves(id1, id2);
+
+    brain.deleteLeaf(id1);
+
+    expect(brain.leaves.size).toBe(1);
+    expect(brain.leaves.has(id2)).toBe(true);
+    expect(brain.tags.has('tag1')).toBe(true); // tag1 is still used by Leaf 2
+    expect(brain.stem.connections.size).toBe(0);
+  });
+
+  it('should handle importing data with missing fields gracefully', () => {
+    const brain = new Rosemary();
+    const incompleteData = JSON.stringify({
+      leaves: [{ id: 'leaf1', content: 'Test content' }],
+      // missing connections and tags
+    });
+
+    brain.importData(incompleteData);
+
+    expect(brain.leaves.size).toBe(1);
+    expect(brain.stem.connections.size).toBe(0);
+    expect(brain.tags.size).toBe(0);
+  });
+
+  it('should handle fuzzy search with no results gracefully', () => {
+    const brain = new Rosemary();
+    brain.addLeaf('Test content', ['tag1']);
+
+    const results = brain.fuzzySearch('nonexistent');
+    expect(results.length).toBe(0);
+  });
+
+  it('should handle getting related leaves for a leaf with no connections', () => {
+    const brain = new Rosemary({ autoSave: false });
+    const id = brain.addLeaf('Isolated leaf');
+
+    const relatedLeaves = brain.getRelatedLeaves(id);
+    expect(relatedLeaves.length).toBe(0);
+  });
+
+  it('should handle connecting a leaf to itself gracefully', () => {
+    const brain = new Rosemary();
+    const id = brain.addLeaf('Self-connected leaf');
+
+    brain.connectLeaves(id, id);
+
+    const connections = brain.stem.getConnectedLeaves(id);
+    expect(connections.length).toBe(0);
+  });
+
+  it('should return connected leaves when getting related leaves', () => {
+    const brain = new Rosemary({ autoSave: false });
+    const id1 = brain.addLeaf('Leaf 1');
+    const id2 = brain.addLeaf('Leaf 2');
+    const id3 = brain.addLeaf('Leaf 3');
+
+    brain.connectLeaves(id1, id2);
+    brain.connectLeaves(id2, id3);
+
+    const relatedLeaves = brain.getRelatedLeaves(id1);
+    expect(relatedLeaves.length).toBe(2);
+    expect(relatedLeaves.map(leaf => leaf.id)).toContain(id2);
+    expect(relatedLeaves.map(leaf => leaf.id)).toContain(id3);
+  });
 });

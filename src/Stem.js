@@ -74,8 +74,11 @@ class Stem {
    */
   removeLeafConnections(leafId) {
     this.connections.delete(leafId);
-    for (const connections of this.connections.values()) {
+    for (const [fromId, connections] of this.connections) {
       connections.delete(leafId);
+      if (connections.size === 0) {
+        this.connections.delete(fromId);
+      }
     }
   }
 

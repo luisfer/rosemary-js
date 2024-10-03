@@ -6,7 +6,13 @@ const dataFile = path.join(__dirname, 'scifi_novel_ideas.csv');
 
 // Function to analyze and log results
 function analyzeIdeas() {
-  console.log(`Imported ${brain.getAllLeaves().length} science fiction ideas.\n`);
+  const allLeaves = brain.getAllLeaves();
+  console.log(`Imported ${allLeaves.length} science fiction ideas.\n`);
+
+  if (allLeaves.length === 0) {
+    console.log("No ideas imported. Cannot perform analysis.");
+    return;
+  }
 
   // Connect ideas with similar tags
   brain.connectSimilarLeaves(2);  // Connect leaves with at least 2 common tags
@@ -25,9 +31,13 @@ function analyzeIdeas() {
 
   console.log('\nRandom idea chain:');
   const randomChain = brain.getRandomConnectedChain(null, 5);
-  randomChain.forEach(leaf => {
-    console.log(`- ${leaf.content}`);
-  });
+  if (randomChain.length > 0) {
+    randomChain.forEach(leaf => {
+      console.log(`- ${leaf.content}`);
+    });
+  } else {
+    console.log("No connected ideas found.");
+  }
 }
 
 // Main execution

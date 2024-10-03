@@ -1,31 +1,22 @@
 #!/usr/bin/env node
 
-const program = require('commander');
+const { program } = require('commander');
 const Rosemary = require('./Rosemary');
-const fs = require('fs');
 const path = require('path');
-const inquirer = require('inquirer');
 const chalk = require('chalk');
+const inquirer = require('inquirer');
+
+program
+  .option('-d, --data-file <path>', 'specify the data file location')
+  .parse(process.argv);
 
 const brain = new Rosemary();
-const dataDir = path.join(process.cwd(), 'data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
-const dataFile = path.join(dataDir, 'rosemary-data.json');
-if (!fs.existsSync(dataFile)) {
-  fs.writeFileSync(dataFile, '{}', 'utf8');
-}
-
-// Load existing data if available
-if (fs.existsSync(dataFile)) {
-  brain.loadData(dataFile);
-}
+brain.loadData();
 
 // Command to add a new leaf interactively
 program
   .command('add')
-  .description('Add a new leaf interactively')
+  .description('Add a new leaf')
   .action(async () => {
     const answers = await inquirer.prompt([
       {
@@ -43,7 +34,7 @@ program
     const tags = answers.tags.split(',').map(tag => tag.trim()).filter(Boolean);
     const id = brain.addLeaf(answers.content, tags);
     console.log(chalk.green(`🌿 Added leaf with ID: ${id}`));
-    brain.saveData(dataFile); // Ensure dataFile is defined and valid
+    brain.saveData();
   });
 
 // Command to print all leaves
@@ -90,7 +81,7 @@ program
     try {
       brain.connectLeaves(id1, id2, options.relationship || '');
       console.log(chalk.green(`🌿 Connected leaf ${id1} and leaf ${id2}`));
-      brain.saveData(dataFile); // Save data after connecting
+      brain.saveData();
     } catch (error) {
       console.error(chalk.red(error.message));
     }
@@ -116,173 +107,72 @@ program
     }
   });
 
-// Command to import from CSV
+// Command to delete a leaf
 program
-  .command('import-csv [filepath]')
-  .description('Import data from a CSV file')
-  .action(async (filepath) => {
+  .command('delete <id>')
+  .description('Delete a leaf')
+  .action((id) => {
     try {
-      if (!filepath) {
-        const { csvPath } = await inquirer.prompt([
-          {
-            type: 'input',
-            name: 'csvPath',
-            message: 'Enter the path to the CSV file:',
-          },
-        ]);
-        filepath = csvPath;
-      }
-      await brain.importFromCSV(filepath);
-      console.log(chalk.green('🌿 Successfully imported data from CSV'));
-      brain.saveData(dataFile);
+      brain.deleteLeaf(id);
+      console.log(chalk.green(`Leaf with ID ${id} has been deleted.`));
+      brain.saveData();
     } catch (error) {
-      console.error(chalk.red(`Error importing CSV: ${error.message}`));
+      console.error(chalk.red(error.message));
     }
   });
 
+// Command to clear all data
 program
-  .command('creative-wizard')
-  .description('Start the Creative Writing Wizard')
+  .command('clear')
+  .description('Clear all data and start fresh')
   .action(async () => {
-    console.log(chalk.blue('🧙 Welcome to the Creative Writing Wizard!'));
-    
-    while (true) {
-      const { choice } = await inquirer.prompt([
-        {
-          type: 'list',
-          name: 'choice',
-          message: 'What would you like to do?',
-          choices: [
-            'Add a new idea',
-            'View all ideas',
-            'Connect similar ideas',
-            'View most connected ideas',
-            'Generate random idea chain',
-            'Search ideas',
-            'Import from CSV',
-            'Exit wizard'
-          ]
-        }
-      ]);
-
-      switch (choice) {
-        case 'Add a new idea':
-          await addIdea();
-          break;
-        case 'View all ideas':
-          viewAllIdeas();
-          break;
-        case 'Connect similar ideas':
-          connectIdeas();
-          break;
-        case 'View most connected ideas':
-          viewMostConnectedIdeas();
-          break;
-        case 'Generate random idea chain':
-          generateRandomChain();
-          break;
-        case 'Search ideas':
-          await searchIdeas();
-          break;
-        case 'Import from CSV':
-          await importFromCSV();
-          break;
-        case 'Exit wizard':
-          console.log(chalk.blue('Thank you for using the Creative Writing Wizard!'));
-          return;
+    const { confirm } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'confirm',
+        message: 'Are you sure you want to clear all your ideas? This action cannot be undone.',
+        default: false
       }
+    ]);
+
+    if (confirm) {
+      brain.clearAllData();
+      console.log(chalk.green('All data has been cleared. You now have a fresh Rosemary.js setup.'));
+    } else {
+      console.log(chalk.yellow('Operation cancelled. Your data remains intact.'));
     }
   });
 
-async function addIdea() {
-  const { content } = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'content',
-      message: 'Enter your idea:'
-    }
-  ]);
-  const { tags } = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'tags',
-      message: 'Enter tags (comma-separated):'
-    }
-  ]);
-  const id = brain.addLeaf(content, tags.split(',').map(tag => tag.trim()));
-  console.log(chalk.green(`🌿 Added idea with ID: ${id}`));
-  brain.saveData(dataFile);
-}
-
-function viewAllIdeas() {
-  const ideas = brain.getAllLeaves();
-  ideas.forEach(idea => {
-    console.log(chalk.yellow(`ID: ${idea.id}`));
-    console.log(chalk.green(`🍃 Content: ${idea.content}`));
-    console.log(chalk.cyan(`🏷️  Tags: ${Array.from(idea.tags).join(', ')}`));
-    console.log('---');
+// Easter egg: rosemary rosemary
+program
+  .command('rosemary')
+  .description('Learn about Rosemary')
+  .action(() => {
+    console.log(chalk.green('\n🌿 About Rosemary.js:'));
+    console.log(chalk.cyan('Rosemary.js is a knowledge management tool that helps you organize and connect your ideas.'));
+    console.log(chalk.cyan('It allows you to create "leaves" of information, tag them, and connect related concepts.'));
+    console.log(chalk.cyan('\nHow to use Rosemary.js:'));
+    console.log(chalk.cyan('1. Add new leaves with the "add" command'));
+    console.log(chalk.cyan('2. Connect related leaves using the "connect" command'));
+    console.log(chalk.cyan('3. Search your knowledge base with the "search" command'));
+    console.log(chalk.cyan('4. Explore related ideas with the "related" command'));
+    console.log(chalk.cyan('\nBenefits of using Rosemary.js:'));
+    console.log(chalk.cyan('- Organize your thoughts and ideas efficiently'));
+    console.log(chalk.cyan('- Discover connections between different concepts'));
+    console.log(chalk.cyan('- Easily retrieve and expand your knowledge'));
+    console.log(chalk.cyan('- Enhance your creativity and problem-solving skills'));
+    console.log(chalk.blue('\n----\n'));
   });
-}
 
-function connectIdeas() {
-  brain.connectSimilarLeaves(2);
-  console.log(chalk.green("🔗 Connected ideas with 2 or more common tags."));
-  brain.saveData(dataFile);
-}
-
-function viewMostConnectedIdeas() {
-  const connectedIdeas = brain.getMostConnectedLeaves(5);
-  connectedIdeas.forEach(idea => {
-    const connections = brain.stem.getConnectedLeaves(idea.id);
-    console.log(chalk.cyan(`🌿 "${idea.content}" (${connections.length} connections)`));
-    console.log(chalk.magenta(`🏷️  Tags: ${Array.from(idea.tags).join(', ')}`));
-    console.log('---');
+// Easter egg: rosemary hello
+program
+  .command('hello')
+  .description('Get a friendly greeting')
+  .action(() => {
+    console.log(chalk.blue('\n🌟 Hello! You are amazing, and you matter! 🌟'));
+    console.log(chalk.yellow('Wishing you a fantastic day filled with inspiration and joy!'));
+    console.log(chalk.green('Remember, every small step forward is progress. Keep growing! 🌱\n'));
   });
-}
-
-function generateRandomChain() {
-  const chain = brain.getRandomConnectedChain();
-  console.log(chalk.magenta("🔗 Random idea chain:"));
-  chain.forEach(idea => console.log(chalk.green(`🍃 ${idea.content}`)));
-}
-
-async function searchIdeas() {
-  const { query } = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'query',
-      message: 'Enter search query:'
-    }
-  ]);
-  const results = brain.getLeavesByContent(query);
-  if (results.length > 0) {
-    console.log(chalk.yellow("🔍 Search results:"));
-    results.forEach(idea => {
-      console.log(chalk.green(`🍃 "${idea.content}"`));
-      console.log(chalk.cyan(`🏷️  Tags: ${Array.from(idea.tags).join(', ')}`));
-      console.log('---');
-    });
-  } else {
-    console.log(chalk.red("No results found."));
-  }
-}
-
-async function importFromCSV() {
-  const { csvPath } = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'csvPath',
-      message: 'Enter the path to the CSV file:'
-    }
-  ]);
-  try {
-    await brain.importFromCSV(csvPath);
-    console.log(chalk.green('🌿 Successfully imported data from CSV'));
-    brain.saveData(dataFile);
-  } catch (error) {
-    console.error(chalk.red(`Error importing CSV: ${error.message}`));
-  }
-}
 
 function displayCustomHelp() {
   console.log(chalk.blue('\n🌿 Welcome to Rosemary - Your Knowledge Management Tool 🌿\n'));
@@ -293,8 +183,13 @@ function displayCustomHelp() {
   console.log(chalk.green('  search <query>') + '      Search leaves by content');
   console.log(chalk.green('  connect <id1> <id2>') + ' Connect two leaves');
   console.log(chalk.green('  related <id>') + '        Get related leaves');
+  console.log(chalk.green('  delete <id>') + '         Delete a leaf');
+  console.log(chalk.green('  clear') + '               Clear all data and start fresh');
   console.log(chalk.green('  import-csv [filepath]') + ' Import data from a CSV file');
+  console.log(chalk.green('  export-csv [filepath]') + ' Export data to a CSV file');
   console.log(chalk.green('  creative-wizard') + '     Start the Creative Writing Wizard');
+  console.log(chalk.green('  rosemary') + '            Learn about Rosemary.js');
+  console.log(chalk.green('  hello') + '               Get a friendly greeting');
   console.log('\nUse ' + chalk.cyan('rosemary [command] --help') + ' for more information about a command.');
 }
 

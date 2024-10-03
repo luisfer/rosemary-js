@@ -1,16 +1,46 @@
 const Leaf = require('./Leaf');
 const Stem = require('./Stem');
 const fs = require('fs');
+const path = require('path');
 const csv = require('csv-parser');
 const { createObjectCsvWriter } = require('csv-writer');
 const marked = require('marked');
 const Fuse = require('fuse.js');
+const chalk = require('chalk');
+const os = require('os');
 
 class Rosemary {
   constructor(options = {}) {
+    this.dataFile = options.dataFile || path.join(process.cwd(), 'rosemary-data.json');
     this.leaves = new Map();
     this.stem = new Stem();
     this.tags = new Set();
+    this.autoSave = options.autoSave !== undefined ? options.autoSave : true;
+  }
+
+  loadData(dataFile = this.dataFile) {
+    if (fs.existsSync(dataFile)) {
+      const jsonData = fs.readFileSync(dataFile, 'utf8');
+      this.importData(jsonData);
+    } else {
+      console.log(chalk.yellow(`No existing data found at ${dataFile}. Initializing with default structure.`));
+      this.initializeDefaultData();
+    }
+  }
+
+  saveData() {
+    if (!this.autoSave) return;
+
+    const data = {
+      leaves: Array.from(this.leaves.values()).map(leaf => leaf.toJSON()),
+      connections: this.stem.toJSON(),
+      tags: Array.from(this.tags)
+    };
+
+    const jsonData = JSON.stringify(data, null, 2);
+   
+    fs.writeFileSync(this.dataFile, jsonData);
+    console.log(chalk.green(`Data saved to ${this.dataFile}`));
   }
 
   // Leaf Management Methods
@@ -175,8 +205,20 @@ class Rosemary {
    * @param {string} relationshipType - The type of relationship between the leaves.
    */
   connectLeaves(leafId1, leafId2, relationshipType = '') {
-    this.validateLeafIds(leafId1, leafId2);
+    if (leafId1 === leafId2) {
+      console.warn(chalk.yellow('Cannot connect a leaf to itself.'));
+      return;
+    }
+    if (!this.leaves.has(leafId1)) {
+      throw new Error(`Leaf with id ${leafId1} not found`);
+    }
+    if (!this.leaves.has(leafId2)) {
+      throw new Error(`Leaf with id ${leafId2} not found`);
+    }
     this.stem.addConnection(leafId1, leafId2, relationshipType);
+    if (this.autoSave) {
+      this.saveData();
+    }
   }
 
   /**
@@ -199,21 +241,29 @@ class Rosemary {
    * @returns {Leaf[]} An array of related leaves.
    */
   getRelatedLeaves(leafId, maxDistance = 2) {
+    const leaf = this.getLeafById(leafId);
+    if (!leaf) {
+      throw new Error(`Leaf with id ${leafId} not found`);
+    }
+
     const relatedLeaves = new Set();
     const queue = [[leafId, 0]];
-    const visited = new Set();
+    const visited = new Set([leafId]);
 
     while (queue.length > 0) {
       const [currentId, distance] = queue.shift();
-      if (distance > maxDistance) continue;
 
-      visited.add(currentId);
-      const connectedLeaves = this.stem.getConnectedLeaves(currentId);
-      
-      for (const [connectedId] of connectedLeaves) {
-        if (!visited.has(connectedId)) {
-          relatedLeaves.add(this.getLeafById(connectedId));
-          queue.push([connectedId, distance + 1]);
+      if (distance > 0) {
+        relatedLeaves.add(this.getLeafById(currentId));
+      }
+
+      if (distance < maxDistance) {
+        const connections = this.stem.getConnectedLeaves(currentId);
+        for (const [connectedId] of connections) {
+          if (!visited.has(connectedId)) {
+            queue.push([connectedId, distance + 1]);
+            visited.add(connectedId);
+          }
         }
       }
     }
@@ -448,41 +498,54 @@ class Rosemary {
   }
 
   /**
-   * Saves the current Rosemary data to a file.
-   * @param {string} filename - The name of the file to save to.
-   */
-  saveData(filename) {
-    const data = {
-      leaves: Array.from(this.leaves.values()).map(leaf => leaf.toJSON()),
-      connections: this.stem.toJSON(),
-      tags: Array.from(this.tags)
-    };
-
-    const jsonData = JSON.stringify(data, null, 2);
-   
-    fs.writeFileSync(filename, jsonData);
-  }
-
-  /**
-   * Loads Rosemary data from a file.
-   * @param {string} filename - The name of the file to load from.
-   */
-  loadData(filename) {
-    if (fs.existsSync(filename)) {
-      const jsonData = fs.readFileSync(filename, 'utf8');
-      this.importData(jsonData);
-    }
-  }
-
-  /**
    * Imports Rosemary data from a JSON string.
    * @param {string} jsonData - The JSON string to import.
    */
   importData(jsonData) {
-    const data = JSON.parse(jsonData);
-    this.leaves = new Map(data.leaves.map(leafData => [leafData.id, Leaf.fromJSON(leafData)]));
-    this.stem = Stem.fromJSON(data.connections);
-    this.tags = new Set(data.tags);
+    try {
+      const data = JSON.parse(jsonData);
+      this.leaves = new Map((data.leaves || []).map(leaf => [leaf.id, Leaf.fromJSON(leaf)]));
+      this.stem = new Stem();
+      if (data.connections) {
+        data.connections.forEach(conn => {
+          if (conn.from && conn.to) {
+            this.stem.addConnection(conn.from, conn.to, conn.type || '');
+          }
+        });
+      }
+      this.tags = new Set(data.tags || []);
+    } catch (error) {
+      console.error(chalk.red('Error importing data:'), error.message);
+      this.leaves = new Map();
+      this.stem = new Stem();
+      this.tags = new Set();
+    }
+  }
+
+  isEmptyOrInvalidData(data) {
+    return !data || !data.leaves || !Array.isArray(data.leaves) || data.leaves.length === 0;
+  }
+
+  initializeDefaultData() {
+    this.leaves = new Map();
+    this.stem = new Stem();
+    this.tags = new Set();
+    
+    const welcomeLeafId = this.addLeaf(
+      "Welcome to Rosemary.js! This is your first leaf.",
+      ["welcome", "rosemary"]
+    );
+
+    this.saveData();
+    console.log(chalk.green('Default data initialized and saved.'));
+    return welcomeLeafId;
+  }
+
+  logDataSummary() {
+    console.log(chalk.cyan('Data Summary:'));
+    console.log(chalk.cyan(`- Leaves: ${this.leaves.size}`));
+    console.log(chalk.cyan(`- Tags: ${this.tags.size}`));
+    console.log(chalk.cyan(`- Connections: ${this.stem.getTotalConnections()}`)); // Changed from getConnectionCount to getTotalConnections
   }
 
   /**
@@ -554,6 +617,40 @@ class Rosemary {
     };
     const fuse = new Fuse(leaves, fuseOptions);
     return fuse.search(query);
+  }
+
+  deleteLeaf(id) {
+    if (!this.leaves.has(id)) {
+      throw new Error(`Leaf with ID ${id} not found.`);
+    }
+
+    const leafToDelete = this.leaves.get(id);
+
+    // Remove connections
+    this.stem.removeLeafConnections(id);
+
+    // Remove tags that are exclusive to this leaf
+    leafToDelete.tags.forEach(tag => {
+      if (![...this.leaves.values()].some(leaf => leaf.id !== id && leaf.hasTag(tag))) {
+        this.tags.delete(tag);
+      }
+    });
+
+    // Remove the leaf
+    this.leaves.delete(id);
+
+    if (this.autoSave) {
+      this.saveData();
+    }
+    return true;
+  }
+
+  clearAllData() {
+    this.leaves = new Map();
+    this.stem = new Stem();
+    this.tags = new Set();
+    this.saveData();
+    this.initializeDefaultData();
   }
 }
 
