@@ -6,6 +6,17 @@
 
 Rosemary.js is a flexible and powerful knowledge management library that serves as a canvas for your ideas and data. It provides a foundation for organizing, connecting, and analyzing information in ways that are meaningful to you.
 
+## 🚨 Important Notice
+
+**Version 1.0.0 is now deprecated due to critical bugs. Please upgrade to version 1.1.0 (Tuscan Blue) for a more stable and reliable experience.**
+
+## 🚀 What's New in 1.1.0 
+
+- 🛠️ Improved flexibility and robustness in core functionality
+- 🐛 Fixed critical bugs in data management and leaf connections
+- 🛡️ Enhanced error handling and edge case management
+- 🧪 Expanded test suite for increased reliability
+
 ## 🎨 Your Data, Your Way
 
 Rosemary.js doesn't dictate how you should organize your information. Instead, it offers a set of tools that you can use to create your own unique knowledge management system. Whether you're organizing research notes, analyzing stock market data, or connecting seemingly unrelated ideas, Rosemary.js adapts to your needs.
@@ -117,10 +128,10 @@ console.log(advancedResults.length); // Output: 2
 
 ### CLI Usage
 
-Rosemary.js comes with a powerful CLI for interacting with your knowledge base. To install the CLI globally:
+Rosemary.js comes with a powerful CLI for interacting with your knowledge base. To use the CLI:
 
 ```bash
-npm install -g rosemary-js-cli
+npm install -g rosemary-js
 ```
 
 Then you can use the following commands:
@@ -141,9 +152,26 @@ rosemary connect <id1> <id2> [-r <relationship>]
 # Get related leaves
 rosemary related <id> [-d <distance>]
 
+# Delete a leaf
+rosemary delete <id>
+
+# Clear all data
+rosemary clear
+
 # Start the Creative Writing Wizard
 rosemary creative-wizard
+
+# Export data
+rosemary export [-f <format>] [-o <output-file>]
+
+# Import data
+rosemary import <input-file>
+
+# Specify data file location (can be used with any command)
+rosemary <command> -d <data-file-path>
 ```
+
+The CLI now supports specifying a custom data file location with the `-d` option, allowing you to manage multiple knowledge bases.
 
 The Creative Writing Wizard provides an interactive interface for:
 - Adding new ideas
@@ -152,6 +180,12 @@ The Creative Writing Wizard provides an interactive interface for:
 - Viewing most connected ideas
 - Generating random idea chains
 - Searching ideas
+
+For more detailed information on each command, use:
+
+```bash
+rosemary help <command>
+```
 
 ## Upcoming Features
 
@@ -162,7 +196,7 @@ I will be constantly working to improve Rosemary.js. Here are some features I am
 - **Periodic Review System**: Implement spaced repetition for effective knowledge reinforcement.
 - **Plugin System**: Extend Rosemary.js functionality with a lightweight plugin architecture.
 
-Have an idea for a feature? We'd love to hear it! Feel free to open an issue or contribute to the development.
+Have an idea for a feature? I'd love to hear it! Feel free to open an issue or contribute to the development.
 
 ## Get Involved
 
@@ -171,17 +205,17 @@ Join the Rosemary.js community! Here's how you can get involved:
 - **Star the repo**: Show your support and stay updated with GitHub stars.
 - **Contribute**: Check out our [Contributing Guide](CONTRIBUTING.md) to get started.
 - **Spread the word**: Tell your friends and colleagues about Rosemary.js.
-- **Share your experience**: We'd love to hear how you're using Rosemary.js. Share your stories on GitHub Discussions or social media.
+- **Share your experience**: I'd love to hear how you're using Rosemary.js. Share your stories on GitHub Discussions or social media.
 
 ## Version Naming Convention
 
 Rosemary.js versions are named after aromatic herbs and spices, reflecting the library's goal of cultivating a rich and flavorful knowledge base. Each major version will be named after a new herb or spice, with minor versions using variations or subspecies.
 
-Current Version: Rosemary Tuscan Blue (1.0.0)
+Current Version: Rosemary Tuscan Blue (1.1.0)
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for more details.
+I welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for more details.
 
 ## License
 

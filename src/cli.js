@@ -190,15 +190,12 @@ function displayCustomHelp() {
   console.log(chalk.green('  creative-wizard') + '     Start the Creative Writing Wizard');
   console.log(chalk.green('  rosemary') + '            Learn about Rosemary.js');
   console.log(chalk.green('  hello') + '               Get a friendly greeting');
-  console.log('\nUse ' + chalk.cyan('rosemary [command] --help') + ' for more information about a command.');
 }
 
 program
   .option('-h, --help', 'display help for command', displayCustomHelp)
   .action(() => {
-    if (!process.argv.slice(2).length) {
-      displayCustomHelp();
-    }
+    displayCustomHelp();
   });
 
 program.parse(process.argv);
