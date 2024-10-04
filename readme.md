@@ -229,7 +229,7 @@ Rosemary.js is maintained by me, Luisfer Romero Calero, a creative software deve
 
 - 📧 Email: luisfer.romero.calero@gmail.com
 - 💻 GitHub: [github.com/luisfer](https://github.com/luisfer)
-- 🔗 LinkedIn: [linkedin.com/in/luisferromero](https://www.linkedin.com/in/luis-fernando-romero-calero-2830049b/)
+- 🔗 LinkedIn: [linkedin.com/in/luisferromero](https://www.linkedin.com/in/luisfer-romero-calero/)
 
 ---
 
