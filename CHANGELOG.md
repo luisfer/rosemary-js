@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Changelog
 
+## [1.1.1] - 2024-10-04
+
+### Added
+
+- Added `getLeavesByConnection` method to Rosemary class
+- Added method parameter documentation in Rosemary class
+
 ## [1.1.0 - Tuscan Blue] - 2024-10-03
 
 ### Added
