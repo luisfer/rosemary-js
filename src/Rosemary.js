@@ -18,6 +18,10 @@ class Rosemary {
     this.autoSave = options.autoSave !== undefined ? options.autoSave : true;
   }
 
+  /**
+   * Loads data from a file into the Rosemary instance.
+   * @param {string} dataFile - The path to the data file.
+   */
   loadData(dataFile = this.dataFile) {
     if (fs.existsSync(dataFile)) {
       const jsonData = fs.readFileSync(dataFile, 'utf8');
@@ -28,6 +32,9 @@ class Rosemary {
     }
   }
 
+  /**
+   * Saves the current Rosemary data to a file.
+   */
   saveData() {
     if (!this.autoSave) return;
 
@@ -97,6 +104,16 @@ class Rosemary {
     });
 
     this.stem.removeLeafConnections(id);
+  }
+
+  /**
+   * Retrieves leaves connected to a given leaf.
+   * @param {string} leafId - The ID of the leaf to find connections for.
+   * @returns {Leaf[]} An array of connected leaves.
+   */
+  getLeavesByConnection(leafId) {
+    const connectedIds = this.stem.getConnectedLeaves(leafId).map(([id]) => id);
+    return connectedIds.map(id => this.getLeafById(id));
   }
 
   // Tag Management Methods
@@ -186,6 +203,10 @@ class Rosemary {
   /**
    * Helper method to sort tags for suggestions.
    * @private
+   * @param {string} a - First tag to compare.
+   * @param {string} b - Second tag to compare.
+   * @param {string} lowercasePartial - Lowercase partial tag for comparison.
+   * @returns {number} Comparison result for sorting.
    */
   sortTags(a, b, lowercasePartial) {
     const aStartsWith = a.toLowerCase().startsWith(lowercasePartial);
@@ -522,10 +543,19 @@ class Rosemary {
     }
   }
 
+  /**
+   * Checks if the provided data is empty or invalid.
+   * @param {Object} data - The data to check.
+   * @returns {boolean} True if the data is empty or invalid, false otherwise.
+   */
   isEmptyOrInvalidData(data) {
     return !data || !data.leaves || !Array.isArray(data.leaves) || data.leaves.length === 0;
   }
 
+  /**
+   * Initializes the Rosemary instance with default data.
+   * @returns {string} The ID of the welcome leaf.
+   */
   initializeDefaultData() {
     this.leaves = new Map();
     this.stem = new Stem();
@@ -541,11 +571,14 @@ class Rosemary {
     return welcomeLeafId;
   }
 
+  /**
+   * Logs a summary of the current Rosemary data.
+   */
   logDataSummary() {
     console.log(chalk.cyan('Data Summary:'));
     console.log(chalk.cyan(`- Leaves: ${this.leaves.size}`));
     console.log(chalk.cyan(`- Tags: ${this.tags.size}`));
-    console.log(chalk.cyan(`- Connections: ${this.stem.getTotalConnections()}`)); // Changed from getConnectionCount to getTotalConnections
+    console.log(chalk.cyan(`- Connections: ${this.stem.getTotalConnections()}`));
   }
 
   /**
@@ -619,6 +652,12 @@ class Rosemary {
     return fuse.search(query);
   }
 
+  /**
+   * Deletes a leaf from the Rosemary instance.
+   * @param {string} id - The ID of the leaf to delete.
+   * @returns {boolean} True if the leaf was successfully deleted, false otherwise.
+   * @throws {Error} If the leaf with the given ID is not found.
+   */
   deleteLeaf(id) {
     if (!this.leaves.has(id)) {
       throw new Error(`Leaf with ID ${id} not found.`);
@@ -645,6 +684,9 @@ class Rosemary {
     return true;
   }
 
+  /**
+   * Clears all data in the Rosemary instance and reinitializes with default data.
+   */
   clearAllData() {
     this.leaves = new Map();
     this.stem = new Stem();
@@ -652,6 +694,7 @@ class Rosemary {
     this.saveData();
     this.initializeDefaultData();
   }
+
 }
 
 module.exports = Rosemary;
