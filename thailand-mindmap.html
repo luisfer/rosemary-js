@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rosemary.js Visualization</title>
+  <script src="https://cdn.jsdelivr.net/npm/vis-data@7/standalone/umd/vis-data.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vis-network@9/standalone/umd/vis-network.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vis-timeline@7/standalone/umd/vis-timeline-graph2d.min.js"></script>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; padding: 16px; background: #0b132b; color: #e0e1dd; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; }
+    .visualization-card { background: #1c2541; border-radius: 8px; padding: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+  </style>
+  </head>
+  <body>
+    <div class="grid">
+      
+          <div class="visualization-card">
+            <div id="visualization-0"></div>
+          </div>
+    </div>
+    <script>
+    
+      (function(){
+      const data = {"nodes":[{"id":"rwXlMhfzwYcj","label":"Bangkok street food","group":"thailand"},{"id":"cMrS04TuIWR2","label":"Thai temples and wats","group":"thailand"},{"id":"vEjFpAEcrXei","label":"Chiang Mai digital nomad scene","group":"thailand"},{"id":"q_IEuzeo8QuR","label":"Thai islands and diving","group":"thailand"},{"id":"GZR3VB2SCKCg","label":"Songkran festival","group":"thailand"}],"edges":[{"from":"cMrS04TuIWR2","to":"rwXlMhfzwYcj"},{"from":"GZR3VB2SCKCg","to":"cMrS04TuIWR2"}]};
+      const container = document.getElementById('visualization-0');
+      const network = new vis.Network(
+        container,
+        {
+          nodes: new vis.DataSet(data.nodes),
+          edges: new vis.DataSet(data.edges)
+        },
+        {"physics":{"stabilization":true},"interaction":{"hover":true},"height":"700px"}
+      );
+      })();
+    
+    </script>
+  </body>
+  </html>

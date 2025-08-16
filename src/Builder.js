@@ -181,6 +181,8 @@ class Builder {
   // Visualization script generators
   _generateD3MindMap(data, containerId, options) {
     return `
+      (function(){
+      const data = ${JSON.stringify(data)};
       const mindMap = d3.select('#${containerId}')
         .append('svg')
         .attr('width', ${options.width})
@@ -234,11 +236,14 @@ class Builder {
           .attr('x', d => d.x)
           .attr('y', d => d.y);
       });
+      })();
     `;
   }
 
   _generateD3GanttChart(data, containerId, options) {
     return `
+      (function(){
+      const data = ${JSON.stringify(data)};
       const gantt = d3.select('#${containerId}')
         .append('svg')
         .attr('width', ${options.width})
@@ -280,11 +285,14 @@ class Builder {
         .attr('width', d => x(new Date(d.end_date)) - x(new Date(d.start_date)))
         .attr('height', y.bandwidth())
         .attr('fill', (d, i) => options.colors[i % options.colors.length]);
+      })();
     `;
   }
 
   _generateVisNetwork(data, containerId, options) {
     return `
+      (function(){
+      const data = ${JSON.stringify(data)};
       const container = document.getElementById('${containerId}');
       const network = new vis.Network(
         container,
@@ -294,11 +302,14 @@ class Builder {
         },
         ${JSON.stringify(options)}
       );
+      })();
     `;
   }
 
   _generateVisTimeline(data, containerId, options) {
     return `
+      (function(){
+      const data = ${JSON.stringify(data)};
       const container = document.getElementById('${containerId}');
       const timeline = new vis.Timeline(
         container,
@@ -306,11 +317,14 @@ class Builder {
         data.groups,
         ${JSON.stringify(options)}
       );
+      })();
     `;
   }
 
   _generateChartJsHeatmap(data, containerId, options) {
     return `
+      (function(){
+      const data = ${JSON.stringify(data)};
       const ctx = document.getElementById('${containerId}').getContext('2d');
       new Chart(ctx, {
         type: 'heatmap',
@@ -322,6 +336,7 @@ class Builder {
           }]
         }
       });
+      })();
     `;
   }
 }
