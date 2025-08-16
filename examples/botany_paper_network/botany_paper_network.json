@@ -1,0 +1,12 @@
+{
+  "leaves": [
+    { "id": "p1", "content": "Morphology of Rosemary (Rosmarinus officinalis)", "tags": ["botany","morphology"], "createdAt": 0, "lastModified": 0 },
+    { "id": "p2", "content": "Essential Oils and Aromatic Profiles of Rosemary Types", "tags": ["chemistry","aromatics"], "createdAt": 0, "lastModified": 0 },
+    { "id": "p3", "content": "Adaptive Traits in Mediterranean Aromatic Herbs", "tags": ["ecology","adaptation"], "createdAt": 0, "lastModified": 0 },
+    { "id": "a1", "content": "Dr. Arp", "tags": ["author"], "createdAt": 0, "lastModified": 0 },
+    { "id": "a2", "content": "Dr. Tuscan", "tags": ["author"], "createdAt": 0, "lastModified": 0 },
+    { "id": "a3", "content": "Dr. Blue", "tags": ["author"], "createdAt": 0, "lastModified": 0 }
+  ],
+  "connections": [],
+  "tags": ["botany","morphology","chemistry","aromatics","ecology","adaptation","author"]
+}

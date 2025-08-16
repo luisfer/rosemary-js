@@ -5,6 +5,8 @@ const path = require('path');
 const csv = require('csv-parser');
 const { createObjectCsvWriter } = require('csv-writer');
 const marked = require('marked');
+const { JSDOM } = require('jsdom');
+const createDOMPurify = require('dompurify');
 const Fuse = require('fuse.js');
 const chalk = require('chalk');
 const os = require('os');
@@ -64,6 +66,7 @@ class Rosemary {
     const leaf = new Leaf(id, content, tags);
     this.leaves.set(id, leaf);
     this.addTags(tags);
+    if (this.autoSave) this.saveData();
     return id;
   }
 
@@ -104,6 +107,7 @@ class Rosemary {
     });
 
     this.stem.removeLeafConnections(id);
+    if (this.autoSave) this.saveData();
   }
 
   /**
@@ -139,6 +143,7 @@ class Rosemary {
     
     this.addTags(tags);
     tags.forEach(tag => leaf.addTag(tag));
+    if (this.autoSave) this.saveData();
   }
 
   /**
@@ -409,9 +414,9 @@ class Rosemary {
    * Exports the Rosemary data to a CSV file.
    * @param {string} filename - The name of the file to export to.
    */
-  exportToCSV(filename) {
-    const csvWriter = this.createCsvWriter(filename);
-    const records = this.createCsvRecords();
+  exportToCSV(filename, { delimiter = ',' } = {}) {
+    const csvWriter = this.createCsvWriter(filename, delimiter);
+    const records = this.createCsvRecords({ delimiter });
     
     csvWriter.writeRecords(records)
       .then(() => console.log('CSV file was written successfully'));
@@ -422,7 +427,7 @@ class Rosemary {
    * @param {string} filename - The name of the file to write to.
    * @returns {Object} The CSV writer object.
    */
-  createCsvWriter(filename) {
+  createCsvWriter(filename, delimiter) {
     return createObjectCsvWriter({
       path: filename,
       header: [
@@ -431,7 +436,8 @@ class Rosemary {
         { id: 'tags', title: 'Tags' },
         { id: 'createdAt', title: 'Created At' },
         { id: 'lastModified', title: 'Last Modified' }
-      ]
+      ],
+      fieldDelimiter: delimiter
     });
   }
 
@@ -439,11 +445,11 @@ class Rosemary {
    * Creates CSV records from the Rosemary data.
    * @returns {Object[]} An array of CSV record objects.
    */
-  createCsvRecords() {
+  createCsvRecords({ delimiter = ',' } = {}) {
     return this.getAllLeaves().map(leaf => ({
       id: leaf.id,
       content: leaf.content,
-      tags: Array.from(leaf.tags).join(';'),
+      tags: Array.from(leaf.tags).join(delimiter),
       createdAt: leaf.createdAt,
       lastModified: leaf.lastModified
     }));
@@ -454,17 +460,17 @@ class Rosemary {
    * @param {string} filename - The name of the file to import from.
    * @returns {Promise} A promise that resolves when import is complete.
    */
-  importFromCSV(filename) {
+  importFromCSV(filename, { delimiter = ',' } = {}) {
     return new Promise((resolve, reject) => {
       const results = [];
       fs.createReadStream(filename)
         .on('error', (error) => reject(new Error(`Failed to read CSV file: ${error.message}`)))
-        .pipe(csv({ separator: ',' }))  // Specify the separator if needed
+        .pipe(csv({ separator: delimiter }))  // Specify the separator
         .on('data', data => results.push(data))
         .on('error', (error) => reject(new Error(`Failed to parse CSV: ${error.message}`)))
         .on('end', () => {
           try {
-            this.processCsvImport(results);
+            this.processCsvImport(results, { delimiter });
             resolve();
           } catch (error) {
             reject(new Error(`Failed to import from CSV: ${error.message}`));
@@ -477,16 +483,19 @@ class Rosemary {
    * Processes CSV import data.
    * @param {Object[]} results - The parsed CSV data.
    */
-  processCsvImport(results) {
+  processCsvImport(results, { delimiter = ',' } = {}) {
     results.forEach(row => {
-      if (!row.id || !row.content) {
+      const id = row.id || row.ID;
+      const content = row.content || row.Content;
+      const tagsRaw = row.tags || row.Tags || '';
+      if (!id || !content) {
         console.warn(`Skipping invalid row: ${JSON.stringify(row)}`);
         return;
       }
 
-      // Split tags by comma and trim whitespace
-      const tags = row.tags ? row.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
-      const leaf = new Leaf(row.id, row.content, tags);
+      // Split tags by provided delimiter and trim whitespace
+      const tags = tagsRaw ? String(tagsRaw).split(delimiter).map(tag => tag.trim()).filter(Boolean) : [];
+      const leaf = new Leaf(id, content, tags);
 
       // We don't have 'Created At' or 'Last Modified' in this CSV, so we'll use current time
       leaf.createdAt = Date.now();
@@ -505,7 +514,8 @@ class Rosemary {
    * @returns {string} A unique ID.
    */
   generateId() {
-    return Math.random().toString(36).substr(2, 9);
+    const crypto = require('crypto');
+    return crypto.randomBytes(9).toString('base64url');
   }
 
   /**
@@ -515,7 +525,11 @@ class Rosemary {
    */
   getLeafContentAsHTML(leafId) {
     const leaf = this.getLeafById(leafId);
-    return leaf ? marked(leaf.content) : null;
+    if (!leaf) return null;
+    const window = new JSDOM('').window;
+    const DOMPurify = createDOMPurify(window);
+    const raw = marked(leaf.content);
+    return DOMPurify.sanitize(raw);
   }
 
   /**
@@ -636,20 +650,40 @@ class Rosemary {
   }
 
   /**
+   * Builds a simple network dataset for visualizations.
+   * @returns {{ nodes: Array, edges: Array }}
+   */
+  buildNetworkDataset() {
+    const nodes = this.getAllLeaves().map(leaf => ({ id: leaf.id, label: leaf.content.slice(0, 80), group: Array.from(leaf.tags)[0] || 'default' }));
+    const edgesSet = new Set();
+    for (const [fromId, connections] of this.stem.connections.entries()) {
+      for (const [toId] of connections.entries()) {
+        const key = fromId < toId ? `${fromId}::${toId}` : `${toId}::${fromId}`;
+        if (!edgesSet.has(key)) edgesSet.add(key);
+      }
+    }
+    const edges = Array.from(edgesSet).map(key => {
+      const [a, b] = key.split('::');
+      return { from: a, to: b };
+    });
+    return { nodes, edges };
+  }
+
+  /**
    * Performs a fuzzy search on leaves based on content and tags.
    * @param {string} query - The search query.
    * @param {Object} options - Additional options for the fuzzy search.
    * @returns {Array} An array of search results, each containing a leaf and its match score.
    */
   fuzzySearch(query, options = {}) {
-    const leaves = Array.from(this.leaves.values());
+    const leaves = Array.from(this.leaves.values()).map(leaf => ({ content: leaf.content, tags: Array.from(leaf.tags), leaf }));
     const fuseOptions = {
       keys: ['content', 'tags'],
       threshold: 0.4,
       ...options
     };
     const fuse = new Fuse(leaves, fuseOptions);
-    return fuse.search(query);
+    return fuse.search(query).map(r => ({ ...r, item: r.item.leaf ? r.item.leaf : r.item }));
   }
 
   /**
@@ -693,6 +727,27 @@ class Rosemary {
     this.tags = new Set();
     this.saveData();
     this.initializeDefaultData();
+  }
+
+  /**
+   * Updates a leaf's content and tags atomically.
+   * @param {string} id - Leaf ID
+   * @param {Object} updates
+   * @param {string} [updates.content]
+   * @param {string[]} [updates.tags]
+   */
+  updateLeaf(id, updates = {}) {
+    const leaf = this.getLeafById(id);
+    if (!leaf) throw new Error(`Leaf with id ${id} not found`);
+    if (typeof updates.content === 'string') {
+      leaf.updateContent(updates.content);
+    }
+    if (Array.isArray(updates.tags)) {
+      leaf.tags = new Set(updates.tags);
+      this.addTags(updates.tags);
+    }
+    if (this.autoSave) this.saveData();
+    return leaf;
   }
 
 }

@@ -8,7 +8,8 @@ const swaggerUi = require('swagger-ui-express');
  * Initialize Express application and Rosemary brain
  */
 const app = express();
-const brain = new Rosemary();
+const brain = new Rosemary({ dataFile: process.env.ROSEMARY_DATA_FILE });
+brain.loadData(process.env.ROSEMARY_DATA_FILE);
 
 // Middleware
 app.use(bodyParser.json());

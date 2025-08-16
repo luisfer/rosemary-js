@@ -1,0 +1,9 @@
+{
+  "leaves": [
+    { "id": "t1", "content": "Bangkok street food", "tags": ["thailand","food","bangkok"], "createdAt": 0, "lastModified": 0 },
+    { "id": "t2", "content": "Thai temples and wats", "tags": ["thailand","culture","bangkok"], "createdAt": 0, "lastModified": 0 },
+    { "id": "t3", "content": "Chiang Mai digital nomad scene", "tags": ["thailand","work","chiangmai"], "createdAt": 0, "lastModified": 0 }
+  ],
+  "connections": [],
+  "tags": ["thailand","food","bangkok","culture","work","chiangmai"]
+}

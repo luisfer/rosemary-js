@@ -6,12 +6,15 @@ const path = require('path');
 const chalk = require('chalk');
 const inquirer = require('inquirer');
 
-program
-  .option('-d, --data-file <path>', 'specify the data file location')
-  .parse(process.argv);
+program.option('-d, --data-file <path>', 'specify the data file location');
 
-const brain = new Rosemary();
-brain.loadData();
+let brain;
+program.hook('preAction', () => {
+  const options = program.opts();
+  const dataPath = options.dataFile || process.env.ROSEMARY_DATA_FILE;
+  brain = new Rosemary({ dataFile: dataPath });
+  brain.loadData(dataPath);
+});
 
 // Command to add a new leaf interactively
 program
@@ -42,6 +45,9 @@ program
   .command('report')
   .description('Print a report of all leaves')
   .action(() => {
+    const opts = program.opts();
+    const dataPath = opts.dataFile || process.env.ROSEMARY_DATA_FILE;
+    if (dataPath) brain.loadData(dataPath);
     const leaves = brain.getAllLeaves();
     console.log(chalk.blue('🌿 Knowledge Base Report:'));
     console.log('---');
@@ -49,6 +55,8 @@ program
       console.log(chalk.yellow(`ID: ${leaf.id}`));
       console.log(chalk.green(`🍃 Content: ${leaf.content}`));
       console.log(chalk.cyan(`🏷️  Tags: ${Array.from(leaf.tags).join(', ')}`));
+      const connections = brain.stem.getConnectedLeaves(leaf.id).length;
+      console.log(chalk.gray(`🔗 Connections: ${connections}`));
       console.log('---');
     });
   });
@@ -104,6 +112,39 @@ program
       });
     } catch (error) {
       console.error(chalk.red(error.message));
+    }
+  });
+
+// Command to import from CSV
+program
+  .command('import-csv [filepath]')
+  .description('Import data from a CSV file')
+  .option('-s, --separator <char>', 'CSV delimiter', ',')
+  .action(async (filepath, options) => {
+    try {
+      const file = filepath || path.join(process.cwd(), 'rosemary-import.csv');
+      await brain.importFromCSV(file, { delimiter: options.separator });
+      console.log(chalk.green(`Imported data from ${file}`));
+      brain.saveData();
+    } catch (error) {
+      console.error(chalk.red(error.message));
+      process.exitCode = 1;
+    }
+  });
+
+// Command to export to CSV
+program
+  .command('export-csv [filepath]')
+  .description('Export data to a CSV file')
+  .option('-s, --separator <char>', 'CSV delimiter', ',')
+  .action(async (filepath, options) => {
+    try {
+      const file = filepath || path.join(process.cwd(), 'rosemary-export.csv');
+      await brain.exportToCSV(file, { delimiter: options.separator });
+      console.log(chalk.green(`Exported data to ${file}`));
+    } catch (error) {
+      console.error(chalk.red(error.message));
+      process.exitCode = 1;
     }
   });
 
@@ -187,7 +228,6 @@ function displayCustomHelp() {
   console.log(chalk.green('  clear') + '               Clear all data and start fresh');
   console.log(chalk.green('  import-csv [filepath]') + ' Import data from a CSV file');
   console.log(chalk.green('  export-csv [filepath]') + ' Export data to a CSV file');
-  console.log(chalk.green('  creative-wizard') + '     Start the Creative Writing Wizard');
   console.log(chalk.green('  rosemary') + '            Learn about Rosemary.js');
   console.log(chalk.green('  hello') + '               Get a friendly greeting');
 }

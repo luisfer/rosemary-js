@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Changelog
 
+## [1.2.0 - Arp] - 2025-08-17
+
+### Added
+- New `updateLeaf(id, { content, tags })` for atomic updates
+- Configurable CSV delimiter in `exportToCSV`/`importFromCSV`
+- Safe HTML rendering via `DOMPurify` + `marked` in `getLeafContentAsHTML`
+- Stable ID generation using `nanoid`
+- API server now loads from `ROSEMARY_DATA_FILE` if provided
+- Visualization builder: fixed preset merging and added presets module; added `buildNetworkDataset()` helper and `scripts/visualize.js`
+- CLI CSV import/export commands; new CLI tests; refreshed examples (botany paper network, Thailand mindmap)
+
+### Changed
+- CLI `-d/--data-file` now respected; data is loaded/saved at that path
+- Auto-save consistency: `addLeaf`, `tagLeaf`, and `removeLeaf` save when `autoSave` is true
+- Fuzzy search indexes array tags correctly and returns `Leaf` items
+
+### Fixed
+- CSV tags delimiter mismatch (export used `;`, import expected `,`) — now consistent and configurable
+- Declared missing runtime deps for API and visualization server (`express`, `body-parser`, `swagger-jsdoc`, `swagger-ui-express`, `http-server`)
+
+### Security
+- Sanitization added to Markdown-to-HTML rendering to mitigate XSS
+
+---
+
 ## [1.1.1] - 2024-10-04
 
 ### Added

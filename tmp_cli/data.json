@@ -1,0 +1,39 @@
+{
+  "leaves": [
+    {
+      "id": "Pfvb0qV1hJXc",
+      "content": "Welcome to Rosemary.js! This is your first leaf.",
+      "tags": [
+        "welcome",
+        "rosemary"
+      ],
+      "createdAt": 1755365583118,
+      "lastModified": 1755365583118
+    },
+    {
+      "id": "a",
+      "content": "A leaf",
+      "tags": [
+        "t1"
+      ],
+      "createdAt": 1755365583118,
+      "lastModified": 1755365583118
+    },
+    {
+      "id": "b",
+      "content": "B leaf",
+      "tags": [
+        "t2"
+      ],
+      "createdAt": 1755365583118,
+      "lastModified": 1755365583118
+    }
+  ],
+  "connections": [],
+  "tags": [
+    "welcome",
+    "rosemary",
+    "t1",
+    "t2"
+  ]
+}

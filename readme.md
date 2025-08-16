@@ -8,14 +8,17 @@ Rosemary.js is a flexible and powerful knowledge management library that serves 
 
 ## 🚨 Important Notice
 
-**Version 1.0.0 is now deprecated due to critical bugs. Please upgrade to version 1.1.0 (Tuscan Blue) for a more stable and reliable experience.**
+**Version 1.0.0 is deprecated due to critical bugs. Please upgrade to 1.2.0 (Arp) for a more stable and secure experience.**
 
-## 🚀 What's New in 1.1.0 
+## 🚀 What's New in 1.2.0 (Arp)
 
-- 🛠️ Improved flexibility and robustness in core functionality
-- 🐛 Fixed critical bugs in data management and leaf connections
-- 🛡️ Enhanced error handling and edge case management
-- 🧪 Expanded test suite for increased reliability
+- 🎯 CLI `-d` option now respected; specify custom data file path
+- 🔐 Markdown-to-HTML is sanitized by default
+- 🆔 Stable IDs via `nanoid`
+- 🔎 Better fuzzy search (tags indexed properly)
+- 📄 CSV delimiter is consistent and configurable
+- 💾 Auto-save is consistent across mutations
+- 🔧 New `updateLeaf` API for atomic updates
 
 ## 🎨 Your Data, Your Way
 
@@ -65,6 +68,7 @@ console.log(brain.getLeafById(leafId).content);
 - **Flexible Sorting**: Sort leaves by creation date, last modified date, tag count, or connection count.
 - **Related Content Discovery**: Find related leaves based on connections or similar tags.
 - **CLI Interface**: Interact with your knowledge base directly from the command line.
+- **Visualization Builder**: Generate network/mindmap HTML from your knowledge graph.
 
 ## Basic Usage Examples
 
@@ -126,6 +130,14 @@ const advancedResults = brain.search('JavaScript OR Python', ['programming']);
 console.log(advancedResults.length); // Output: 2
 ```
 
+```javascript
+// Fuzzy search (content + tags)
+const results = brain.fuzzySearch('javascript');
+results.forEach(({ item, score }) => {
+  console.log(item.content, score);
+});
+```
+
 ### CLI Usage
 
 Rosemary.js comes with a powerful CLI for interacting with your knowledge base. To use the CLI:
@@ -158,17 +170,14 @@ rosemary delete <id>
 # Clear all data
 rosemary clear
 
-# Start the Creative Writing Wizard
-rosemary creative-wizard
-
-# Export data
-rosemary export [-f <format>] [-o <output-file>]
-
-# Import data
-rosemary import <input-file>
+# Import/Export CSV (default delimiter ,)
+rosemary import-csv ./ideas.csv -d ./rosemary-data.json
+rosemary export-csv ./export.csv -d ./rosemary-data.json
 
 # Specify data file location (can be used with any command)
 rosemary <command> -d <data-file-path>
+# Or use env var for API server
+# ROSEMARY_DATA_FILE=./my-data.json node src/api.js
 ```
 
 The CLI now supports specifying a custom data file location with the `-d` option, allowing you to manage multiple knowledge bases.
@@ -187,14 +196,39 @@ For more detailed information on each command, use:
 rosemary help <command>
 ```
 
+## Visualization
+
+Generate a network visualization from your current data file:
+
+```bash
+ROSEMARY_DATA_FILE=./rosemary-data.json npm run visualize
+```
+
+Or programmatically:
+
+```javascript
+const Rosemary = require('rosemary-js');
+const Builder = require('rosemary-js/src/Builder');
+const brain = new Rosemary({ dataFile: './rosemary-data.json' });
+brain.loadData();
+const data = brain.buildNetworkDataset();
+new Builder(brain).useTemplate('dashboard').addVisualization('network', data, {}).build('./graph.html');
+```
+
+## Examples
+
+- Academic: Botany paper/author/tag network (`examples/botany_paper_network/`)
+- Thailand: Mindmap of ideas around food, culture, travel (`examples/thailand_mindmap/`)
+  - Both examples include CSV and JSON variants and simple terminal commands in their README files.
+
 ## Upcoming Features
 
 I will be constantly working to improve Rosemary.js. Here are some features I am excited about:
 
-- **Visualization Module**: Generate mind maps and network graphs of your knowledge base.
 - **Leaf Templates**: Create and use templates for common types of information.
 - **Periodic Review System**: Implement spaced repetition for effective knowledge reinforcement.
 - **Plugin System**: Extend Rosemary.js functionality with a lightweight plugin architecture.
+- **LLM Connectors**: Optional modules for prompt engineering and token optimization (future work).
 
 Have an idea for a feature? I'd love to hear it! Feel free to open an issue or contribute to the development.
 
@@ -211,7 +245,7 @@ Join the Rosemary.js community! Here's how you can get involved:
 
 Rosemary.js versions are named after aromatic herbs and spices, reflecting the library's goal of cultivating a rich and flavorful knowledge base. Each major version will be named after a new herb or spice, with minor versions using variations or subspecies.
 
-Current Version: Rosemary Tuscan Blue (1.1.0)
+Current Version: Rosemary Arp (1.2.0)
 
 ## Contributing
 
