@@ -1,7 +1,7 @@
 # Rosemary.js 🌿
 
 <p align="center">
-  <img src="assets/logo.png" alt="Rosemary.js Logo" width="300"/>
+  <img src="assets/logo-2.png" alt="Rosemary.js Logo" width="300"/>
 </p>
 
 Rosemary.js is a flexible and powerful knowledge management library that serves as a canvas for your ideas and data. It provides a foundation for organizing, connecting, and analyzing information in ways that are meaningful to you.
