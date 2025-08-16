@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Changelog
 
+## [1.2.1 - Arp hotfix] - 2025-08-17
+
+### Fixed
+- Visualization builder now inlines dataset into scripts to avoid `data is not defined` in generated HTML
+- Repo hygiene: ignore generated HTML and temp folders (`tmp/`, `tmp_cli/`); removed previously tracked artifacts
+
+---
+
 ## [1.2.0 - Arp] - 2025-08-17
 
 ### Added

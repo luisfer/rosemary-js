@@ -1,6 +1,6 @@
 {
     "name": "rosemary-js",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "A knowledge management tool for organizing and connecting notes.",
     "main": "src/Rosemary.js",
     "bin": {
@@ -45,6 +45,11 @@
         "url": "https://github.com/luisfer/rosemary-js/issues"
     },
     "homepage": "https://github.com/luisfer/rosemary-js#readme",
+    "files": [
+        "src",
+        "readme.md",
+        "LICENSE.md"
+    ],
     "devDependencies": {
         "jest": "^29.7.0"
     }
