@@ -1,3 +1,11 @@
 node_modules/
 
 rosemary-data.json
+
+# Generated visualizations
+thailand-mindmap.html
+rosemary-network.html
+
+# Temp outputs
+tmp/
+tmp_cli/
