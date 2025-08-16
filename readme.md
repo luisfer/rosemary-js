@@ -245,7 +245,33 @@ Join the Rosemary.js community! Here's how you can get involved:
 
 Rosemary.js versions are named after aromatic herbs and spices, reflecting the library's goal of cultivating a rich and flavorful knowledge base. Each major version will be named after a new herb or spice, with minor versions using variations or subspecies.
 
-Current Version: Rosemary Arp (1.2.0)
+Current Version: Rosemary Arp (1.2.1)
+
+## LLM (Irene) Preview
+
+Rosemary 2.0 (Irene) adds optional LLM capabilities on top of the existing API. It is fully backward-compatible and opt-in.
+
+- Import the LLM layer via subpath export: `require('rosemary-js/llm')`
+- No API key required for core APIs (`buildPromptContext`, `semanticSearch` with local lightweight embeddings)
+- Providers (e.g. Claude) will be pluggable in upcoming milestones
+
+Quick start (no network):
+
+```javascript
+const { RosemaryLLM } = require('rosemary-js/llm');
+
+const brain = new RosemaryLLM();
+const id = await brain.addEnhancedLeaf('Tokens expire after 24 hours', ['auth', 'token']);
+await brain.addEnhancedLeaf('401 error means authentication failed', ['auth', 'error']);
+await brain.addEnhancedLeaf('POST /auth/refresh gets new tokens', ['auth', 'refresh']);
+
+const results = await brain.semanticSearch('token expires');
+const ctx = brain.buildPromptContext(id, { depth: 2, maxTokens: 500 });
+const res = await brain.complete('What happens when my token expires?', id); // returns prompt if no provider
+console.log(res);
+```
+
+See `docs/` for Irene product dossier, implementation spec, roadmap, and migration guide.
 
 ## Contributing
 
