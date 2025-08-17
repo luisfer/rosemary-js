@@ -255,6 +255,30 @@ Rosemary 2.0 (Irene) adds optional LLM capabilities on top of the existing API. 
 - No API key required for core APIs (`buildPromptContext`, `semanticSearch` with local lightweight embeddings)
 - Providers (e.g. Claude) will be pluggable in upcoming milestones
 
+Security and keys:
+
+- Do not hardcode API keys; use env vars or a secret manager. Example env vars:
+  - `CLAUDE_API_KEY` for Anthropic Claude
+- Never commit `.env` files; they are ignored by default in this repo.
+
+Provider configuration patterns:
+
+```javascript
+const { RosemaryLLM } = require('rosemary-js/llm');
+const ClaudeProvider = require('rosemary-js/src/llm/providers/ClaudeProvider');
+
+// 1) Env var (12-factor)
+const brain1 = new RosemaryLLM({
+  claudeProvider: process.env.CLAUDE_API_KEY ? new ClaudeProvider(process.env.CLAUDE_API_KEY) : null
+});
+
+// 2) Secret manager injection (serverless-friendly)
+async function makeBrainWithVault(getSecret) {
+  const key = await getSecret('CLAUDE_API_KEY');
+  return new RosemaryLLM({ claudeProvider: new ClaudeProvider(key) });
+}
+```
+
 Quick start (no network):
 
 ```javascript
