@@ -1,79 +1,41 @@
 # Contributing to Rosemary.js
 
-First off, thank you for considering contributing to Rosemary.js! It's people like you that make Rosemary.js such a great tool.
+Thanks for contributing.
 
-## Where do I go from here?
+## Reporting issues
 
-If you've noticed a bug or have a feature request, make sure to check our [Issues](https://github.com/luisfer/rosemary-js/issues) page to see if someone else in the community has already created a ticket. If not, go ahead and [make one](https://github.com/luisfer/rosemary-js/issues/new)!
+- Search existing issues before opening a new one.
+- Include reproduction steps, expected behavior, and actual behavior.
+- For bugs, include Node version and OS details.
 
-## Fork & create a branch
+## Development setup
 
-If this is something you think you can fix, then [fork Rosemary.js](https://help.github.com/articles/fork-a-repo) and create a branch with a descriptive name.
-
-A good branch name would be (where issue #325 is the ticket you're working on):
-
-```sh
-git checkout -b 325-add-ai-support
-```
-
-## Get the test suite running
-
-Make sure you're using the latest version of Node.js and npm. Install the development dependencies:
-
-```sh
+```bash
 npm install
-```
-
-Now you should be able to run the entire test suite using:
-
-```sh
 npm test
 ```
 
-## Implement your fix or feature
+## Branching and pull requests
 
-At this point, you're ready to make your changes! Feel free to ask for help; everyone is a beginner at first.
+1. Create a feature branch from the latest `main`.
+2. Keep changes focused and include tests when relevant.
+3. Update documentation when behavior or interfaces change.
+4. Open a PR with:
+   - problem statement,
+   - implementation notes,
+   - test evidence.
 
-## Get the style right
+## Testing expectations
 
-Your patch should follow the same conventions & pass the same code quality checks as the rest of the project. Run `npm run lint` to check your code style.
+- Run `npm test` before opening a PR.
+- If you change CLI behavior, include CLI-oriented test coverage.
+- If you change docs commands/snippets, verify they run as written.
 
-## Make a Pull Request
+## Release-related changes
 
-At this point, you should switch back to your master branch and make sure it's up to date with Rosemary.js's master branch:
+For version/release changes, update:
 
-```sh
-git remote add upstream git@github.com:YOUR_USERNAME/rosemary-js.git
-git checkout master
-git pull upstream master
-```
+- `CHANGELOG.md`
+- package version metadata
+- any affected docs (`readme.md`, docs/)
 
-Then update your feature branch from your local copy of master, and push it!
-
-```sh
-git checkout 325-add-ai-support
-git rebase master
-git push --set-upstream origin 325-add-ai-support
-```
-
-Finally, go to GitHub and [make a Pull Request](https://help.github.com/articles/creating-a-pull-request) :D
-
-## Keeping your Pull Request updated
-
-If a maintainer asks you to "rebase" your PR, they're saying that a lot of code has changed, and that you need to update your branch so it's easier to merge.
-
-To learn more about rebasing in Git, there are a lot of [good](https://git-scm.com/book/en/v2/Git-Branching-Rebasing) [resources](https://www.atlassian.com/git/tutorials/rewriting-history/git-rebase) but here's the suggested workflow:
-
-```sh
-git checkout 325-add-japanese-localization
-git pull --rebase upstream master
-git push --force-with-lease 325-add-japanese-localization
-```
-
-## Code review
-
-A team member will review your pull request and provide feedback. Please be patient as pull requests are often reviewed in batches.
-
-## Thank you!
-
-Thank you for your contribution! We appreciate your time and effort to make Rosemary.js better.

@@ -1,18 +1,32 @@
-const { RosemaryLLM } = require('../../src/llm/RosemaryLLM');
+const Rosemary = require('../../src/Rosemary');
 
+/**
+ * Minimal retrieval example for LLM-oriented workflows.
+ *
+ * This repository does not ship a dedicated `RosemaryLLM` module yet.
+ * Use the core API to collect and format context, then pass it to your model provider.
+ */
 (async () => {
-  const brain = new RosemaryLLM();
-  const a = await brain.addEnhancedLeaf('Tokens expire after 24 hours', ['auth', 'token']);
-  await brain.addEnhancedLeaf('401 error means authentication failed', ['auth', 'error']);
-  await brain.addEnhancedLeaf('POST /auth/refresh gets new tokens', ['auth', 'refresh']);
+  const brain = new Rosemary({ autoSave: false });
 
-  const results = await brain.semanticSearch('token expires');
-  console.log('semanticSearch top:', results[0]);
+  const a = brain.addLeaf('Tokens expire after 24 hours', ['auth', 'token']);
+  const b = brain.addLeaf('401 error means authentication failed', ['auth', 'error']);
+  const c = brain.addLeaf('POST /auth/refresh gets new tokens', ['auth', 'refresh']);
 
-  const ctx = brain.buildPromptContext(a, { depth: 2, maxTokens: 400 });
-  console.log('context tokens ~', brain.estimateTokens(ctx));
+  brain.connectLeaves(a, b, 'same topic');
+  brain.connectLeaves(a, c, 'recovery flow');
 
-  const output = await brain.complete('What happens when my token expires?', a);
-  console.log(output);
+  const hits = brain.fuzzySearch('token expires');
+  const related = brain.getRelatedLeaves(a, 1);
+
+  const promptContext = [
+    '# Retrieved notes',
+    ...hits.map(({ item }) => `- ${item.content}`),
+    '',
+    '# Connected notes',
+    ...related.map(leaf => `- ${leaf.content}`)
+  ].join('\n');
+
+  console.log(promptContext);
 })();
 
