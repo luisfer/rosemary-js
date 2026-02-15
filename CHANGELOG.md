@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Release scope and compatibility contract documentation (`docs/RELEASE_SCOPE.md`).
+- Migration guide for 1.2.x → 1.3.0 upgrades (`docs/MIGRATION_1.2_TO_1.3.md`).
+- Roadmap document clarifying shipped vs future scope (`docs/ROADMAP.md`).
 - CI workflow for Node.js test execution on push and pull requests.
 - Release checklist for GitHub and npm publication (`docs/RELEASE_CHECKLIST.md`).
 - `test:ci` and `pack:dry-run` scripts for repeatable release validation.

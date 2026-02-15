@@ -219,6 +219,12 @@ Version 1.3.0 is intended to be backward compatible with 1.2.x for:
 - CLI command names/options,
 - persisted data format.
 
+Additional release docs:
+
+- `docs/MIGRATION_1.2_TO_1.3.md`
+- `docs/RELEASE_SCOPE.md`
+- `docs/ROADMAP.md`
+
 ---
 
 ## Development
