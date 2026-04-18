@@ -1,23 +1,34 @@
 {
     "name": "rosemary-js",
     "version": "1.2.1",
-    "description": "A knowledge management tool for organizing and connecting notes.",
+    "description": "A graph-shaped knowledge store for Node: leaves, tags, typed connections, fuzzy search, optional LLM context layer.",
     "main": "src/Rosemary.js",
     "bin": {
         "rosemary": "src/cli.js"
     },
+    "engines": {
+        "node": ">=20"
+    },
     "scripts": {
         "start": "node src/cli.js",
         "test": "jest",
-        "build": "echo \"Building the project...\" && exit 0",
-        "visualize": "node scripts/visualize.js"
+        "build": "echo \"No build step. Pure JS, no bundling.\" && exit 0",
+        "visualize": "node scripts/visualize.js",
+        "check-release": "node scripts/check-release.js",
+        "release": "node scripts/release.js",
+        "prepublishOnly": "npm test && node scripts/check-release.js"
     },
     "keywords": [
+        "knowledge-graph",
         "notes",
-        "knowledge",
-        "management",
+        "graph",
+        "tags",
+        "fuzzy-search",
+        "llm",
+        "context",
         "csv",
-        "markdown"
+        "markdown",
+        "second-brain"
     ],
     "author": "Luis Fernando Romero Calero",
     "license": "MIT",
@@ -29,13 +40,18 @@
         "fuse.js": "^7.0.0",
         "inquirer": "^8.0.0",
         "marked": "^14.1.2",
+        "dompurify": "^3.1.6",
+        "jsdom": "^24.1.0"
+    },
+    "optionalDependencies": {
         "express": "^4.19.2",
         "body-parser": "^1.20.2",
         "swagger-jsdoc": "^6.2.8",
         "swagger-ui-express": "^5.0.1",
-        "http-server": "^14.1.1",
-        "dompurify": "^3.1.6",
-        "jsdom": "^24.1.0"
+        "http-server": "^14.1.1"
+    },
+    "devDependencies": {
+        "jest": "^29.7.0"
     },
     "repository": {
         "type": "git",
@@ -47,10 +63,21 @@
     "homepage": "https://github.com/luisfer/rosemary-js#readme",
     "files": [
         "src",
+        "scripts",
+        "docs",
+        "examples",
+        "assets",
         "readme.md",
-        "LICENSE.md"
+        "LICENSE.md",
+        "CHANGELOG.md",
+        "RELEASE.md",
+        "AGENTS.md"
     ],
-    "devDependencies": {
-        "jest": "^29.7.0"
+    "exports": {
+        ".": "./src/Rosemary.js",
+        "./llm": "./src/llm/RosemaryLLM.js",
+        "./builder": "./src/Builder.js",
+        "./api": "./src/api.js",
+        "./package.json": "./package.json"
     }
 }

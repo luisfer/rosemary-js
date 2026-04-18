@@ -1,11 +1,19 @@
 node_modules/
 
+# Local data file (default location)
 rosemary-data.json
 
-# Generated visualizations
+# Generated visualizations at repo root
 thailand-mindmap.html
 rosemary-network.html
 
-# Temp outputs
+# Temp outputs from experiments
 tmp/
 tmp_cli/
+
+# OS noise
+**/.DS_Store
+
+# Env files (never commit API keys)
+.env
+.env.*

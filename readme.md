@@ -1,320 +1,232 @@
-# Rosemary.js 🌿
+# rosemary-js
 
 <p align="center">
-  <img src="assets/logo-2.png" alt="Rosemary.js Logo" width="300"/>
+  <img src="assets/logo-2.png" alt="rosemary-js" width="240"/>
 </p>
 
-Rosemary.js is a flexible and powerful knowledge management library that serves as a canvas for your ideas and data. It provides a foundation for organizing, connecting, and analyzing information in ways that are meaningful to you.
+A graph-shaped knowledge store for Node. Stores ideas as leaves (nodes) with tags and typed connections, persists to a single JSON file, and exposes a CLI, a small HTTP API, and an optional LLM context layer.
 
-## 🚨 Important Notice
+- Library: `require('rosemary-js')`
+- CLI: `rosemary <command>`
+- Optional LLM layer: `require('rosemary-js/llm')`
 
-**Version 1.0.0 is deprecated due to critical bugs. Please upgrade to 1.2.0 (Arp) for a more stable and secure experience.**
+MIT. Node 18+.
 
-## 🚀 What's New in 1.2.0 (Arp)
+## Install
 
-- 🎯 CLI `-d` option now respected; specify custom data file path
-- 🔐 Markdown-to-HTML is sanitized by default
-- 🆔 Stable IDs via `nanoid`
-- 🔎 Better fuzzy search (tags indexed properly)
-- 📄 CSV delimiter is consistent and configurable
-- 💾 Auto-save is consistent across mutations
-- 🔧 New `updateLeaf` API for atomic updates
-
-## 🎨 Your Data, Your Way
-
-Rosemary.js doesn't dictate how you should organize your information. Instead, it offers a set of tools that you can use to create your own unique knowledge management system. Whether you're organizing research notes, analyzing stock market data, or connecting seemingly unrelated ideas, Rosemary.js adapts to your needs.
-
-I'm excited to see the creative ways you'll use Rosemary.js! Every dataset, every collection of ideas, and every problem space is unique. Rosemary.js is designed to be flexible enough to handle this diversity while providing powerful tools for connection and analysis.
-
-## 🌱 Growing Together
-
-I believe that the true potential of Rosemary.js will be realized through the creativity of its users. I encourage you to experiment, to push the boundaries of what's possible, and to share your experiences with the community.
-
-- Have you found an innovative way to use Rosemary.js?
-- Did you create a unique visualization of your data?
-- Have you integrated Rosemary.js into a larger system in an interesting way?
-
-I'd love to hear about it! Your experiences and use cases can inspire others and help shape the future development of Rosemary.js.
-
-## 🚀 Getting Started
-
-## Installation
 ```bash
 npm install rosemary-js
 ```
 
-## Quick Start
-
-```javascript
-const Rosemary = require('rosemary-js');
-
-const brain = new Rosemary();
-
-// Add a new leaf
-const leafId = brain.addLeaf('Rosemary.js is amazing!', ['technology', 'productivity']);
-
-// Get leaf content
-console.log(brain.getLeafById(leafId).content);
-```
-
-## Features
-
-- **Organic Knowledge Structure**: Create a flexible, interconnected web of information.
-- **Effortless Input**: Capture thoughts and ideas quickly and easily.
-- **Rich Connections**: Link related concepts across different domains.
-- **Smart Tagging System**: Organize information with multi-dimensional tagging.
-- **Powerful Search**: Find information quickly with content-based and fuzzy search.
-- **Import/Export**: Seamlessly import and export your knowledge base in JSON and CSV formats.
-- **Flexible Sorting**: Sort leaves by creation date, last modified date, tag count, or connection count.
-- **Related Content Discovery**: Find related leaves based on connections or similar tags.
-- **CLI Interface**: Interact with your knowledge base directly from the command line.
-- **Visualization Builder**: Generate network/mindmap HTML from your knowledge graph.
-
-## Basic Usage Examples
-
-Here are some examples to help you get started with Rosemary.js:
-
-### Adding and Retrieving Leaves
-
-```javascript
-const brain = new Rosemary();
-
-// Add leaves
-const leaf1Id = brain.addLeaf('JavaScript is versatile', ['programming', 'web']);
-const leaf2Id = brain.addLeaf('Python is great for data science', ['programming', 'data']);
-
-// Retrieve leaves
-const leaf1 = brain.getLeafById(leaf1Id);
-console.log(leaf1.content); // Output: JavaScript is versatile
-
-// Get all leaves
-const allLeaves = brain.getAllLeaves();
-console.log(allLeaves.length); // Output: 2
-```
-
-### Working with Tags
-
-```javascript
-// Get all tags
-const allTags = brain.getAllTags();
-console.log(allTags); // Output: ['programming', 'web', 'data']
-
-// Find leaves by tag
-const programmingLeaves = brain.getLeavesByTag('programming');
-console.log(programmingLeaves.length); // Output: 2
-
-// Add a tag to an existing leaf
-brain.tagLeaf(leaf1Id, 'frontend');
-```
-
-### Connecting Leaves
-
-```javascript
-// Connect two leaves
-brain.connectLeaves(leaf1Id, leaf2Id, 'related programming languages');
-
-// Get connected leaves
-const connectedLeaves = brain.getConnectedLeaves(leaf1Id);
-console.log(connectedLeaves.length); // Output: 1
-```
-
-### Searching
-
-```javascript
-// Search by content
-const results = brain.getLeavesByContent('data');
-console.log(results.length); // Output: 1
-
-// Advanced search (if implemented)
-const advancedResults = brain.search('JavaScript OR Python', ['programming']);
-console.log(advancedResults.length); // Output: 2
-```
-
-```javascript
-// Fuzzy search (content + tags)
-const results = brain.fuzzySearch('javascript');
-results.forEach(({ item, score }) => {
-  console.log(item.content, score);
-});
-```
-
-### CLI Usage
-
-Rosemary.js comes with a powerful CLI for interacting with your knowledge base. To use the CLI:
+For the CLI globally:
 
 ```bash
 npm install -g rosemary-js
 ```
 
-Then you can use the following commands:
+## Quick start
 
-```bash
-# Add a new leaf
-rosemary add
+```javascript
+const Rosemary = require('rosemary-js');
 
-# Print a report of all leaves
-rosemary report
+const brain = new Rosemary({ dataFile: './my-data.json' });
+brain.loadData();
 
-# Search leaves by content
-rosemary search <query>
+const a = brain.addLeaf('JavaScript runs in browsers and Node', ['programming', 'web']);
+const b = brain.addLeaf('HTML structures web documents', ['programming', 'web']);
+brain.connectLeaves(a, b, 'co-occurs-with');
 
-# Connect two leaves
-rosemary connect <id1> <id2> [-r <relationship>]
-
-# Get related leaves
-rosemary related <id> [-d <distance>]
-
-# Delete a leaf
-rosemary delete <id>
-
-# Clear all data
-rosemary clear
-
-# Import/Export CSV (default delimiter ,)
-rosemary import-csv ./ideas.csv -d ./rosemary-data.json
-rosemary export-csv ./export.csv -d ./rosemary-data.json
-
-# Specify data file location (can be used with any command)
-rosemary <command> -d <data-file-path>
-# Or use env var for API server
-# ROSEMARY_DATA_FILE=./my-data.json node src/api.js
+console.log(brain.getRelatedLeaves(a).map(l => l.content));
 ```
 
-The CLI now supports specifying a custom data file location with the `-d` option, allowing you to manage multiple knowledge bases.
+## Versions
 
-The Creative Writing Wizard provides an interactive interface for:
-- Adding new ideas
-- Viewing all ideas
-- Connecting similar ideas
-- Viewing most connected ideas
-- Generating random idea chains
-- Searching ideas
+Current: `1.2.1`. Versions `1.0.0` and `1.2.0` were tagged in git but contain bugs or were never published to npm; do not use them. Always install `1.2.1` or later. The full version table lives in [`CHANGELOG.md`](./CHANGELOG.md).
 
-For more detailed information on each command, use:
+## Concepts
+
+- **Leaf** — a node holding `content` (string), `tags` (set), `id`, and timestamps.
+- **Stem** — the set of bidirectional connections between leaves, each with an optional `relationshipType` string.
+- **Tag** — a free-form label. Tags index leaves and feed fuzzy search.
+- **Connection** — a typed edge between two leaves.
+
+Persistence is a single JSON file at `options.dataFile` (default `./rosemary-data.json`). The file is rewritten on every mutation when `autoSave` is true (default).
+
+## API
+
+### Constructor
+
+```javascript
+new Rosemary({ dataFile: './data.json', autoSave: true })
+```
+
+### Leaves
+
+| Method | Returns | Notes |
+|---|---|---|
+| `addLeaf(content, tags = [])` | `string` (id) | nanoid-style id |
+| `getLeafById(id)` | `Leaf` | throws if missing |
+| `getAllLeaves()` | `Leaf[]` | |
+| `updateLeaf(id, { content?, tags? })` | `Leaf` | atomic |
+| `removeLeaf(id)` / `deleteLeaf(id)` | `void` / `boolean` | also removes connections |
+| `getLeavesByConnection(id)` | `Leaf[]` | |
+| `getLeavesByContent(query)` | `Leaf[]` | substring match |
+| `fuzzySearch(query, fuseOptions?)` | `{ item, score }[]` | content + tags |
+
+### Tags
+
+| Method | Returns |
+|---|---|
+| `tagLeaf(id, ...tags)` | `void` |
+| `getAllTags()` | `{ name, count, leaves }[]` |
+| `getLeavesByTag(tag)` | `Leaf[]` |
+| `getMostUsedTags(limit = 5)` | `{ name, count, ... }[]` |
+| `suggestTags(partial, limit = 5)` | `string[]` |
+
+### Connections
+
+| Method | Returns |
+|---|---|
+| `connectLeaves(idA, idB, relationshipType = '')` | `void` |
+| `getRelatedLeaves(id, maxDistance = 2)` | `Leaf[]` (BFS) |
+| `connectSimilarLeaves(threshold = 1)` | `void` (auto-connects on shared tags) |
+| `getMostConnectedLeaves(limit = 5)` | `Leaf[]` |
+| `getRandomConnectedChain(startId?, maxLength = 5)` | `Leaf[]` |
+
+### Sorting
+
+`getLeavesSortedByCreationDate(asc?)`, `getLeavesSortedByLastModified(asc?)`, `getLeavesSortedByTagCount(asc?)`, `getLeavesSortedByConnectionCount(asc?)`, `getTagsSortedByLeafCount(asc?)`.
+
+### Import / export
+
+| Method | Notes |
+|---|---|
+| `loadData(file?)` / `saveData()` | reads/writes `dataFile` |
+| `importData(jsonString)` | parses an in-memory JSON string |
+| `exportToJSON(file)` / `importFromJSON(file)` | full snapshot |
+| `exportToCSV(file, { delimiter = ',' })` | leaves only (not connections) |
+| `importFromCSV(file, { delimiter = ',' })` | returns a `Promise` |
+| `getLeafContentAsHTML(id)` | Markdown → sanitized HTML (DOMPurify) |
+| `buildNetworkDataset()` | `{ nodes, edges }` for visualizations |
+| `clearAllData()` | resets to default seed leaf |
+
+## CLI
 
 ```bash
-rosemary help <command>
+rosemary add                              # interactive prompt
+rosemary report                           # list all leaves
+rosemary search <query>                   # substring search
+rosemary connect <id1> <id2> [-r <rel>]
+rosemary related <id> [-d <distance>]
+rosemary delete <id>
+rosemary clear
+rosemary import-csv <file> [-s <sep>]
+rosemary export-csv <file> [-s <sep>]
+```
+
+All commands accept `-d, --data-file <path>` to point at a specific data file. The env var `ROSEMARY_DATA_FILE` works too.
+
+```bash
+rosemary report -d ./project-a.json
+ROSEMARY_DATA_FILE=./project-a.json rosemary report
 ```
 
 ## Visualization
 
-Generate a network visualization from your current data file:
+Generate a network HTML from the current data file:
 
 ```bash
 ROSEMARY_DATA_FILE=./rosemary-data.json npm run visualize
 ```
 
-Or programmatically:
+Programmatic:
 
 ```javascript
 const Rosemary = require('rosemary-js');
 const Builder = require('rosemary-js/src/Builder');
+
 const brain = new Rosemary({ dataFile: './rosemary-data.json' });
 brain.loadData();
+
 const data = brain.buildNetworkDataset();
-new Builder(brain).useTemplate('dashboard').addVisualization('network', data, {}).build('./graph.html');
+new Builder(brain)
+  .useTemplate('dashboard')
+  .addVisualization('network', data, {})
+  .build('./graph.html');
+```
+
+`Builder` requires `http-server` only if you call `.build(path, { serve: true })`. Install it on demand: `npm install http-server`.
+
+## Optional LLM layer
+
+```javascript
+const { RosemaryLLM } = require('rosemary-js/llm');
+
+const brain = new RosemaryLLM({ autoSave: false });
+const id = await brain.addEnhancedLeaf('Tokens expire after 24 hours', ['auth']);
+await brain.addEnhancedLeaf('401 means authentication failed', ['auth', 'error']);
+
+const results = await brain.semanticSearch('token expires');
+const ctx = brain.buildPromptContext(id, { depth: 2, maxTokens: 500 });
+const res = await brain.complete('What happens when my token expires?', id);
+```
+
+The default `generateEmbedding` is a 64-dimensional character n-gram hash. It is fast and zero-dependency but it is not a real semantic embedding. For real semantic recall, pass a `config.embedder` function:
+
+```javascript
+const brain = new RosemaryLLM({
+  embedder: async (text) => myTransformersPipeline(text)
+});
+```
+
+Providers (`ClaudeProvider`) are stubs by default. They return the prompt for inspection unless constructed with `{ live: true }` and an API key. Never hardcode keys; read from environment variables or a secret manager.
+
+```javascript
+const ClaudeProvider = require('rosemary-js/src/llm/providers/ClaudeProvider');
+
+const brain = new RosemaryLLM({
+  claudeProvider: process.env.CLAUDE_API_KEY
+    ? new ClaudeProvider(process.env.CLAUDE_API_KEY, { live: true })
+    : null
+});
+```
+
+## HTTP API
+
+`src/api.js` is an Express server exposing `/api/v1/*` and Swagger UI at `/api-docs`. Requires `express`, `body-parser`, `swagger-jsdoc`, `swagger-ui-express` (declared as `optionalDependencies` from 1.3.0 onwards). Run with:
+
+```bash
+ROSEMARY_DATA_FILE=./data.json node src/api.js
 ```
 
 ## Examples
 
-- Academic: Botany paper/author/tag network (`examples/botany_paper_network/`)
-- Thailand: Mindmap of ideas around food, culture, travel (`examples/thailand_mindmap/`)
-  - Both examples include CSV and JSON variants and simple terminal commands in their README files.
+- `examples/botany_paper_network/` — paper / author / tag graph (CSV and JSON variants)
+- `examples/thailand_mindmap/` — concept mindmap
+- `examples/llm/minimal_llm_example.js` — opt-in LLM context-building
 
-## Upcoming Features
+## Direction
 
-I will be constantly working to improve Rosemary.js. Here are some features I am excited about:
+The forward-looking design notes — typed implication edges, concept resolution, drift walks, an MCP server, pluggable embedders — live in [`docs/direction.md`](./docs/direction.md). Non-goals in [`docs/non-goals.md`](./docs/non-goals.md).
 
-- **Leaf Templates**: Create and use templates for common types of information.
-- **Periodic Review System**: Implement spaced repetition for effective knowledge reinforcement.
-- **Plugin System**: Extend Rosemary.js functionality with a lightweight plugin architecture.
-- **LLM Connectors**: Optional modules for prompt engineering and token optimization (future work).
+## Releasing
 
-Have an idea for a feature? I'd love to hear it! Feel free to open an issue or contribute to the development.
+A single command, governed by [`RELEASE.md`](./RELEASE.md):
 
-## Get Involved
-
-Join the Rosemary.js community! Here's how you can get involved:
-
-- **Star the repo**: Show your support and stay updated with GitHub stars.
-- **Contribute**: Check out our [Contributing Guide](CONTRIBUTING.md) to get started.
-- **Spread the word**: Tell your friends and colleagues about Rosemary.js.
-- **Share your experience**: I'd love to hear how you're using Rosemary.js. Share your stories on GitHub Discussions or social media.
-
-## Version Naming Convention
-
-Rosemary.js versions are named after aromatic herbs and spices, reflecting the library's goal of cultivating a rich and flavorful knowledge base. Each major version will be named after a new herb or spice, with minor versions using variations or subspecies.
-
-Current Version: Rosemary Arp (1.2.1)
-
-## LLM (Irene) Preview
-
-Rosemary 2.0 (Irene) adds optional LLM capabilities on top of the existing API. It is fully backward-compatible and opt-in.
-
-- Import the LLM layer via subpath export: `require('rosemary-js/llm')`
-- No API key required for core APIs (`buildPromptContext`, `semanticSearch` with local lightweight embeddings)
-- Providers (e.g. Claude) will be pluggable in upcoming milestones
-
-Security and keys:
-
-- Do not hardcode API keys; use env vars or a secret manager. Example env vars:
-  - `CLAUDE_API_KEY` for Anthropic Claude
-- Never commit `.env` files; they are ignored by default in this repo.
-
-Provider configuration patterns:
-
-```javascript
-const { RosemaryLLM } = require('rosemary-js/llm');
-const ClaudeProvider = require('rosemary-js/src/llm/providers/ClaudeProvider');
-
-// 1) Env var (12-factor)
-const brain1 = new RosemaryLLM({
-  claudeProvider: process.env.CLAUDE_API_KEY ? new ClaudeProvider(process.env.CLAUDE_API_KEY) : null
-});
-
-// 2) Secret manager injection (serverless-friendly)
-async function makeBrainWithVault(getSecret) {
-  const key = await getSecret('CLAUDE_API_KEY');
-  return new RosemaryLLM({ claudeProvider: new ClaudeProvider(key) });
-}
+```bash
+npm run release -- patch   # or minor, or major
 ```
 
-Quick start (no network):
-
-```javascript
-const { RosemaryLLM } = require('rosemary-js/llm');
-
-const brain = new RosemaryLLM();
-const id = await brain.addEnhancedLeaf('Tokens expire after 24 hours', ['auth', 'token']);
-await brain.addEnhancedLeaf('401 error means authentication failed', ['auth', 'error']);
-await brain.addEnhancedLeaf('POST /auth/refresh gets new tokens', ['auth', 'refresh']);
-
-const results = await brain.semanticSearch('token expires');
-const ctx = brain.buildPromptContext(id, { depth: 2, maxTokens: 500 });
-const res = await brain.complete('What happens when my token expires?', id); // returns prompt if no provider
-console.log(res);
-```
-
-See `docs/` for Irene product dossier, implementation spec, roadmap, and migration guide.
+This runs the test suite, asserts the working tree is clean, bumps the version, creates the matching git tag, pushes with `--follow-tags`, and publishes to npm. The version in `package.json` is the single source of truth; git tag and npm registry must match.
 
 ## Contributing
 
-I welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for more details.
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md). Run `npm test` before opening a PR.
 
 ## License
 
-Rosemary.js is [MIT licensed](LICENSE).
+MIT. See [`LICENSE.md`](./LICENSE.md).
 
-## About the Author
+## Author
 
-Rosemary.js is maintained by me, Luisfer Romero Calero, a creative software developer. I created this library from Sevilla, Spain, and Bangkok, Thailand. I had the idea in 2016 and now I am implementing it.
-
-🔍 **Open to New Opportunities**: I'm currently exploring new challenges in software development. Please reach out if you want to work together, or just to chat about software development!
-
-- 📧 Email: luisfer.romero.calero@gmail.com
-- 💻 GitHub: [github.com/luisfer](https://github.com/luisfer)
-- 🔗 LinkedIn: [linkedin.com/in/luisferromero](https://www.linkedin.com/in/luisfer-romero-calero/)
-
----
-
-Cultivate your knowledge. Let your ideas flourish. Grow your digital second brain with Rosemary.js. 🧠🌿
+Maintained by [@luisfer](https://github.com/luisfer).

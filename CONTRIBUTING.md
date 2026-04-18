@@ -1,79 +1,83 @@
-# Contributing to Rosemary.js
+# Contributing
 
-First off, thank you for considering contributing to Rosemary.js! It's people like you that make Rosemary.js such a great tool.
+Thank you for considering a contribution. Read this file end-to-end before opening a PR.
 
-## Where do I go from here?
+## Setup
 
-If you've noticed a bug or have a feature request, make sure to check our [Issues](https://github.com/luisfer/rosemary-js/issues) page to see if someone else in the community has already created a ticket. If not, go ahead and [make one](https://github.com/luisfer/rosemary-js/issues/new)!
-
-## Fork & create a branch
-
-If this is something you think you can fix, then [fork Rosemary.js](https://help.github.com/articles/fork-a-repo) and create a branch with a descriptive name.
-
-A good branch name would be (where issue #325 is the ticket you're working on):
-
-```sh
-git checkout -b 325-add-ai-support
-```
-
-## Get the test suite running
-
-Make sure you're using the latest version of Node.js and npm. Install the development dependencies:
-
-```sh
+```bash
+git clone https://github.com/luisfer/rosemary-js.git
+cd rosemary-js
+nvm use            # uses .nvmrc (Node 20)
 npm install
-```
-
-Now you should be able to run the entire test suite using:
-
-```sh
 npm test
 ```
 
-## Implement your fix or feature
+Requires Node 20 or 22. Older Node versions are not supported.
 
-At this point, you're ready to make your changes! Feel free to ask for help; everyone is a beginner at first.
+## What lives where
 
-## Get the style right
+- `src/` — library source (`Rosemary.js`, `cli.js`, `Builder.js`, `api.js`, `llm/`).
+- `src/_tests_/` — Jest tests. Every public method has one.
+- `docs/` — `llm.md`, `direction.md`, `non-goals.md`. Read `direction.md` before proposing significant new surface area.
+- `examples/` — runnable `node examples/<file>.js`.
+- `scripts/` — `release.js`, `check-release.js`, `visualize.js`.
+- `AGENTS.md` — instructions for AI tools and the voice contract.
+- `RELEASE.md` — release process, run by `npm run release`. Do not bypass it.
 
-Your patch should follow the same conventions & pass the same code quality checks as the rest of the project. Run `npm run lint` to check your code style.
+## Voice
 
-## Make a Pull Request
+All user-facing text (README, CLI output, error messages, docs, commit messages, GitHub release notes) follows the spec-sheet voice in `AGENTS.md`. Plain, declarative, no marketing copy, no decorative emoji, no hype verbs.
 
-At this point, you should switch back to your master branch and make sure it's up to date with Rosemary.js's master branch:
+If a description cannot be written without `unlock`, `supercharge`, `seamless`, etc., the description is the problem, not the feature. Cut.
 
-```sh
-git remote add upstream git@github.com:YOUR_USERNAME/rosemary-js.git
-git checkout master
-git pull upstream master
+## Branching
+
+Trunk-based on `main`. Open a PR from a topic branch:
+
+```bash
+git checkout -b feat/short-description
+# or fix/short-description, docs/short-description, refactor/short-description
 ```
 
-Then update your feature branch from your local copy of master, and push it!
+## Commits
 
-```sh
-git checkout 325-add-ai-support
-git rebase master
-git push --set-upstream origin 325-add-ai-support
+Conventional Commits, lower-case subject, no trailing period:
+
+```
+<type>(<scope>): <subject>
+
+<body, wrapped at 72 chars, present tense, no marketing>
 ```
 
-Finally, go to GitHub and [make a Pull Request](https://help.github.com/articles/creating-a-pull-request) :D
+Allowed types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `build`, `ci`, `perf`.
 
-## Keeping your Pull Request updated
+A breaking change goes in the body as `BREAKING CHANGE: <description>` and triggers a major version. Breaking changes to the v1.x `Rosemary` class API are not accepted.
 
-If a maintainer asks you to "rebase" your PR, they're saying that a lot of code has changed, and that you need to update your branch so it's easier to merge.
+## Pull requests
 
-To learn more about rebasing in Git, there are a lot of [good](https://git-scm.com/book/en/v2/Git-Branching-Rebasing) [resources](https://www.atlassian.com/git/tutorials/rewriting-history/git-rebase) but here's the suggested workflow:
+- Tests pass locally (`npm test`).
+- Public methods have a Jest test in `src/_tests_/`.
+- New runtime imports do not pull from `optionalDependencies`. The base library and CLI must work after `npm install rosemary-js` alone.
+- README, `docs/`, and CLI help reflect any API changes.
+- `CHANGELOG.md` updated under `## Unreleased`.
+- No `.env*`, no API keys, no `.DS_Store`, no `tmp/` artifacts in the diff.
 
-```sh
-git checkout 325-add-japanese-localization
-git pull --rebase upstream master
-git push --force-with-lease 325-add-japanese-localization
+The repo runs CI on Node 20 and 22 for every PR. Both must pass before review.
+
+## Releases
+
+Maintainers only. The version in `package.json` is the single source of truth. Git tag `v<version>` and the npm registry must match. See `RELEASE.md`. Use:
+
+```bash
+npm run release -- patch    # or minor, major, or explicit x.y.z
 ```
 
-## Code review
+Do not run `npm publish` directly. The release script and `prepublishOnly` guard exist precisely to prevent the desync incidents described in `RELEASE.md`.
 
-A team member will review your pull request and provide feedback. Please be patient as pull requests are often reviewed in batches.
+## Security
 
-## Thank you!
+Vulnerabilities go to the email in `SECURITY.md`, not to public issues.
 
-Thank you for your contribution! We appreciate your time and effort to make Rosemary.js better.
+## Issues
+
+Bug reports and feature requests: <https://github.com/luisfer/rosemary-js/issues>. Include a minimal reproduction for bugs.
