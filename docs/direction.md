@@ -101,3 +101,15 @@ This is the layer that turns Rosemary from "a Node library" into "memory that li
 6. `rosemary-mcp` (separate package, depends on 1–5).
 
 Each one ships behind a minor version. None of them break the v1.x API.
+
+## Maintenance: CommonJS → ESM
+
+Rosemary-js currently ships as CommonJS (`require()` everywhere). Several upstream dependencies have shipped ESM-only majors that we cannot consume without converting:
+
+- `chalk` 5+ (pinned to 4.x)
+- `marked` 15+ (pinned to 14.x)
+- `jsdom` 26+ (pinned to 24.x)
+
+Dependabot still ships patch and minor bumps for these; major bumps are explicitly ignored in `.github/dependabot.yml` until the migration happens.
+
+The migration is a single deliberate breaking change: convert `src/**/*.js` to ESM, switch `package.json` to `"type": "module"`, ship a CJS shim via `exports` for downstream consumers that still use `require('rosemary-js')`. Worth doing once the v2.x feature surface above stabilizes, not before — the cost of breaking downstream `require()` users twice in a year is higher than the cost of staying on chalk 4 / marked 14 / jsdom 24 for now.

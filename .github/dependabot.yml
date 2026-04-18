@@ -8,6 +8,17 @@ updates:
     commit-message:
       prefix: "chore(deps)"
       include: scope
+    # rosemary-js is CommonJS. The packages below have shipped ESM-only
+    # majors that break `require()`. Ignore their major bumps until the
+    # codebase migrates to ESM (tracked in docs/direction.md).
+    # Patch and minor bumps still flow through normally.
+    ignore:
+      - dependency-name: chalk
+        update-types: ["version-update:semver-major"]
+      - dependency-name: marked
+        update-types: ["version-update:semver-major"]
+      - dependency-name: jsdom
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
