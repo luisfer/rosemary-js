@@ -41,7 +41,7 @@
         "inquirer": "^8.0.0",
         "marked": "^14.1.2",
         "dompurify": "^3.1.6",
-        "jsdom": "^24.1.0"
+        "jsdom": "^29.0.2"
     },
     "optionalDependencies": {
         "express": "^4.19.2",
