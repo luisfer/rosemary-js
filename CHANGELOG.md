@@ -4,6 +4,11 @@ All notable changes to this project are documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/). Versioning follows [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.2] - 2026-05-13
+
+### Fixed
+- README Agent Context Mermaid diagram now uses GitHub-compatible node identifiers and labels.
+
 ## [3.0.1] - 2026-05-13
 
 ### Fixed

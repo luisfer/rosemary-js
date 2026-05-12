@@ -41,9 +41,9 @@ console.log(brain.getRelatedLeaves(a).map(l => l.content));
 
 ## Versions
 
-Current: `3.0.1`.
+Current: `3.0.2`.
 
-Version `3.0.1` is a documentation-sync patch for `3.0.0` (`Agent Context`). Version `3.0.0` adds schema-versioned graph persistence, typed relationships, graph traversal, concept resolution, prompt-context packing, TypeScript declarations, and agent-context evals. Version `2.0.0` remains the clean Node 20 baseline. The full version table lives in [`CHANGELOG.md`](./CHANGELOG.md).
+Version `3.0.2` is a documentation-rendering patch for `3.0.0` (`Agent Context`). Version `3.0.0` adds schema-versioned graph persistence, typed relationships, graph traversal, concept resolution, prompt-context packing, TypeScript declarations, and agent-context evals. Version `2.0.0` remains the clean Node 20 baseline. The full version table lives in [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Concepts
 
@@ -229,11 +229,11 @@ Use Rosemary when an agent needs structured recall without loading a full knowle
 
 ```mermaid
 flowchart LR
-  dataFile["JSON data file"] --> graph["Leaves, tags, relationships"]
-  graph --> resolve["resolve / infer / bridge"]
-  graph --> contextPack["buildPromptContext"]
-  contextPack --> agent["Coding agent"]
-  agent --> checks["tests / evals / release gates"]
+  dataFile[JSON data file] --> store[Leaves tags relationships]
+  store --> graphOps[resolve infer bridge]
+  store --> contextPack[buildPromptContext]
+  contextPack --> codingAgent[Coding agent]
+  codingAgent --> releaseChecks[tests evals release gates]
 ```
 
 Run the included context eval:
