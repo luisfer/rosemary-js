@@ -47,7 +47,7 @@
     },
     "optionalDependencies": {
         "express": "^4.19.2",
-        "body-parser": "^1.20.2",
+        "body-parser": "^2.2.2",
         "swagger-jsdoc": "^6.2.8",
         "swagger-ui-express": "^5.0.1",
         "http-server": "^14.1.1"
