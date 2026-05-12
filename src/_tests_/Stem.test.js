@@ -31,18 +31,26 @@ describe('Stem Class', () => {
     const json = stem.toJSON();
     
     expect(json).toEqual([
-      {
-        leafId: 'leaf1',
-        connections: [['leaf2', 'related']]
-      },
-      {
-        leafId: 'leaf2',
-        connections: [['leaf1', 'related']]
-      }
+      { from: 'leaf1', to: 'leaf2', type: 'related', directed: false }
     ]);
   });
 
-  it('should deserialize from JSON correctly', () => {
+  it('should deserialize canonical JSON correctly', () => {
+    const json = [
+      { from: 'leaf1', to: 'leaf2', type: 'related', directed: false },
+      { from: 'leaf2', to: 'leaf3', type: 'implies', directed: true }
+    ];
+
+    const newStem = Stem.fromJSON(json);
+
+    expect(newStem.connections.size).toBe(2);
+    expect(newStem.connections.get('leaf1').get('leaf2')).toBe('related');
+    expect(newStem.connections.get('leaf2').get('leaf1')).toBe('related');
+    expect(newStem.connections.get('leaf2').get('leaf3')).toBe('implies');
+    expect(newStem.connections.get('leaf3')).toBeUndefined();
+  });
+
+  it('should deserialize legacy JSON correctly', () => {
     const json = [
       {
         leafId: 'leaf1',

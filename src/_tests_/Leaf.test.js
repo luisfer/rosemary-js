@@ -2,11 +2,12 @@ const Leaf = require('../Leaf');
 
 describe('Leaf Class', () => {
   it('should create a leaf with given id, content, and tags', () => {
-    const leaf = new Leaf('leaf1', 'Test content', ['tag1', 'tag2']);
+    const leaf = new Leaf('leaf1', 'Test content', ['tag1', 'tag2'], { source: 'test' });
     
     expect(leaf.id).toBe('leaf1');
     expect(leaf.content).toBe('Test content');
     expect(Array.from(leaf.tags)).toEqual(['tag1', 'tag2']);
+    expect(leaf.metadata).toEqual({ source: 'test' });
     expect(leaf.createdAt).toBeDefined();
     expect(leaf.lastModified).toBeDefined();
   });
@@ -37,6 +38,7 @@ describe('Leaf Class', () => {
       id: 'leaf4',
       content: 'Serialization test',
       tags: ['jsonTag'],
+      metadata: {},
       createdAt: leaf.createdAt,
       lastModified: leaf.lastModified
     });
@@ -47,6 +49,7 @@ describe('Leaf Class', () => {
       id: 'leaf5',
       content: 'Deserialization test',
       tags: ['deserializeTag'],
+      metadata: { source: 'fixture' },
       createdAt: 1625077800000,
       lastModified: 1625077805000
     };
@@ -56,6 +59,7 @@ describe('Leaf Class', () => {
     expect(leaf.id).toBe('leaf5');
     expect(leaf.content).toBe('Deserialization test');
     expect(Array.from(leaf.tags)).toEqual(['deserializeTag']);
+    expect(leaf.metadata).toEqual({ source: 'fixture' });
     expect(leaf.createdAt).toBe(1625077800000);
     expect(leaf.lastModified).toBe(1625077805000);
   });

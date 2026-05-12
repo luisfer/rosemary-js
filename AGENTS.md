@@ -4,7 +4,7 @@ Instructions for any AI agent (Cursor, Claude Code, Codex, Aider, Cline, Copilot
 
 ## Project profile
 
-- **Type:** open-source library, JavaScript (CommonJS), Node 18+, npm.
+- **Type:** open-source library, JavaScript (CommonJS), Node 20+, npm.
 - **One-line:** A graph-shaped knowledge store: leaves (nodes), tags, typed connections, fuzzy and structural search, optional LLM context-building layer.
 - **Public API:** `Rosemary` (core), `RosemaryLLM` (`require('rosemary-js/llm')`), `Builder` (`require('rosemary-js/builder')`), API server (`require('rosemary-js/api')`).
 - **Test:** `npm test` (Jest).

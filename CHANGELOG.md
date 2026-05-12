@@ -4,6 +4,23 @@ All notable changes to this project are documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/). Versioning follows [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-05-12
+
+### Added
+- Schema-versioned JSON export with canonical connection records and backward-compatible legacy connection import.
+- Leaf metadata persisted through JSON import/export and accepted by `addLeaf`, `updateLeaf`, and `addEnhancedLeaf`.
+- Reserved edge vocabulary export, directed connections, `infer`, `resolve`, `walk`, and `bridge` graph primitives.
+- `RosemaryLLM` embedding rebuilds, semantic-aware `resolve`, relevance-scored prompt context, and concise/detailed context formats.
+- TypeScript declaration files for the core, LLM, and Builder entrypoints.
+- Dependency-free `examples/mcp/` prototype for the future `rosemary-mcp` tool surface.
+- `npm run eval:agent-context` and `evals/agent-context.json` for recall, inference, bridge, and context-pack checks.
+
+### Changed
+- README and LLM docs now use public package entrypoints, Node 20, and the current `2.0.0` baseline.
+
+### Fixed
+- Saved connection JSON now round-trips through `loadData`, `importData`, and `importFromJSON` without silently dropping edges.
+
 ## [2.0.0] - 2026-04-18 (Gorizia)
 
 A clean restart. No breaking changes to the v1.x `Rosemary` class API. The major bump signals a wiped GitHub release history, a rewritten README, a real release process, a documented forward direction, and a tightened modernization baseline (Node 20 minimum, Dependabot, security policy).

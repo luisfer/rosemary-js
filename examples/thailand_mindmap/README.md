@@ -5,5 +5,5 @@ Run any of these:
 node thailand_mindmap.js
 
 # From CSV
-ROSEMARY_DATA_FILE=./examples/thailand_mindmap/thailand_mindmap.json node -e "const R=require('../../src/Rosemary');const p=require('path');const b=new R({dataFile:process.env.ROSEMARY_DATA_FILE});b.importFromCSV(p.join(process.cwd(),'examples/thailand_mindmap/thailand_mindmap.csv')).then(()=>console.log('done'))"
+ROSEMARY_DATA_FILE=./examples/thailand_mindmap/thailand_mindmap.json node -e "const R=require('rosemary-js');const p=require('path');const b=new R({dataFile:process.env.ROSEMARY_DATA_FILE});b.importFromCSV(p.join(process.cwd(),'examples/thailand_mindmap/thailand_mindmap.csv')).then(()=>console.log('done'))"
 ```

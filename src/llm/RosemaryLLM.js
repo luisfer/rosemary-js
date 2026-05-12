@@ -16,7 +16,7 @@ const Rosemary = require('../Rosemary');
 
 class RosemaryLLM extends Rosemary {
   constructor(config = {}) {
-    super({ autoSave: config.autoSave });
+    super({ autoSave: config.autoSave, dataFile: config.dataFile });
     this.providers = {
       claude: config.claudeProvider || null,
     };
@@ -26,8 +26,8 @@ class RosemaryLLM extends Rosemary {
   }
 
   async addEnhancedLeaf(content, tags = [], metadata = {}) {
-    const leafId = this.addLeaf(content, tags);
-    const embedding = await this.generateEmbedding(content, metadata);
+    const leafId = this.addLeaf(content, tags, metadata);
+    const embedding = await this.generateEmbedding(content);
     this.embeddings.set(leafId, embedding);
     return leafId;
   }
@@ -71,6 +71,7 @@ class RosemaryLLM extends Rosemary {
 
   async semanticSearch(query, options = {}) {
     const { topK = 5, threshold = 0 } = options;
+    await this.rebuildMissingEmbeddings();
     const queryEmbedding = await this.generateEmbedding(query);
     const scores = [];
     for (const [leafId, embedding] of this.embeddings) {
@@ -83,47 +84,86 @@ class RosemaryLLM extends Rosemary {
       .map(s => ({ leaf: this.getLeafById(s.leafId), score: s.similarity }));
   }
 
+  async rebuildMissingEmbeddings() {
+    for (const leaf of this.getAllLeaves()) {
+      if (!this.embeddings.has(leaf.id)) {
+        this.embeddings.set(leaf.id, await this.generateEmbedding(leaf.content));
+      }
+    }
+  }
+
+  async rebuildEmbeddings() {
+    this.embeddings = new Map();
+    await this.rebuildMissingEmbeddings();
+    return this.embeddings;
+  }
+
   buildPromptContext(leafId, options = {}) {
     const {
       depth = 2,
       maxTokens = 1000,
       includeRelationships = true,
-      includeTags = true
+      includeTags = true,
+      responseFormat = 'detailed'
     } = options;
 
     const centerLeaf = this.getLeafById(leafId);
-    // BFS up to depth collecting neighbors
     const visited = new Set([leafId]);
-    const queue = [[leafId, 0]];
+    const queue = [[leafId, 0, []]];
     const related = [];
     while (queue.length > 0) {
-      const [currentId, d] = queue.shift();
+      const [currentId, d, path] = queue.shift();
       if (d >= depth) continue;
       const conns = this.stem.getConnectedLeaves(currentId);
       for (const [toId, relationship] of conns) {
         if (!visited.has(toId)) {
           const leaf = this.getLeafById(toId);
+          const distance = d + 1;
+          const nextPath = [...path, { from: currentId, to: toId, type: relationship }];
           related.push({
+            id: leaf.id,
             content: leaf.content,
+            tags: includeTags ? Array.from(leaf.tags) : undefined,
+            metadata: responseFormat === 'detailed' ? leaf.metadata : undefined,
             relationship: includeRelationships ? relationship : undefined,
-            relevance: 1.0
+            distance,
+            path: responseFormat === 'detailed' ? nextPath : undefined,
+            relevance: this.scoreContextRelevance(centerLeaf, leaf, relationship, distance)
           });
           visited.add(toId);
-          queue.push([toId, d + 1]);
+          queue.push([toId, distance, nextPath]);
         }
       }
     }
 
     const context = {
       core: {
+        id: centerLeaf.id,
         content: centerLeaf.content,
-        tags: includeTags ? Array.from(centerLeaf.tags) : undefined
+        tags: includeTags ? Array.from(centerLeaf.tags) : undefined,
+        metadata: responseFormat === 'detailed' ? centerLeaf.metadata : undefined
       },
-      related,
+      related: related.sort((a, b) => b.relevance - a.relevance || a.distance - b.distance),
       graph_depth: depth,
-      total_nodes: related.length + 1
+      total_nodes: related.length + 1,
+      response_format: responseFormat
     };
     return this.pruneToTokenLimit(context, maxTokens);
+  }
+
+  scoreContextRelevance(centerLeaf, relatedLeaf, relationship, distance) {
+    const distanceScore = 1 / Math.max(distance, 1);
+    const sharedTags = Array.from(centerLeaf.tags).filter(tag => relatedLeaf.tags.has(tag)).length;
+    const tagScore = Math.min(sharedTags * 0.15, 0.3);
+    const relationshipScore = relationship ? 0.2 : 0;
+    const now = Date.now();
+    const ageDays = Math.max((now - (relatedLeaf.lastModified || relatedLeaf.createdAt || now)) / 86400000, 0);
+    const recencyScore = Math.max(0, 0.1 - (ageDays * 0.002));
+    let semanticScore = 0;
+    if (this.embeddings.has(centerLeaf.id) && this.embeddings.has(relatedLeaf.id)) {
+      semanticScore = Math.max(0, this.cosineSimilarity(this.embeddings.get(centerLeaf.id), this.embeddings.get(relatedLeaf.id))) * 0.2;
+    }
+    return Math.min(1, Number((distanceScore + tagScore + relationshipScore + recencyScore + semanticScore).toFixed(3)));
   }
 
   pruneToTokenLimit(context, maxTokens) {
@@ -131,7 +171,8 @@ class RosemaryLLM extends Rosemary {
     const estimate = () => this.estimateTokens(clone);
     let current = estimate();
     if (current <= maxTokens) return clone;
-    // Remove low relevance
+    clone.related = clone.related || [];
+    clone.related.sort((a, b) => (b.relevance || 0) - (a.relevance || 0));
     clone.related = clone.related.filter(r => (r.relevance ?? 1) >= 0.5);
     current = estimate();
     if (current <= maxTokens) return clone;
@@ -143,6 +184,42 @@ class RosemaryLLM extends Rosemary {
     if (clone.core) delete clone.core.tags;
     current = estimate();
     return clone;
+  }
+
+  async resolve(input, options = {}) {
+    const base = super.resolve(input, options);
+    await this.rebuildMissingEmbeddings();
+    const semanticHits = await this.semanticSearch(input, {
+      topK: options.limit || 5,
+      threshold: options.semanticThreshold || 0
+    });
+    const candidates = [...base.candidates];
+    semanticHits.forEach(hit => {
+      const existing = candidates.find(candidate => candidate.type === 'leaf' && candidate.id === hit.leaf.id);
+      const score = Math.min(1, hit.score * 0.8);
+      if (existing) {
+        existing.score = Math.max(existing.score, score);
+        existing.reasons = Array.from(new Set([...(existing.reasons || []), 'semantic']));
+      } else {
+        candidates.push({
+          type: 'leaf',
+          id: hit.leaf.id,
+          leaf: hit.leaf,
+          score,
+          reasons: ['semantic']
+        });
+      }
+    });
+
+    const ranked = candidates
+      .sort((a, b) => b.score - a.score || (a.id || a.name).localeCompare(b.id || b.name))
+      .slice(0, options.limit || 5);
+
+    return {
+      canonical: ranked[0] || null,
+      candidates: ranked,
+      confidence: ranked[0] ? ranked[0].score : 0
+    };
   }
 
   estimateTokens(obj) {
@@ -178,4 +255,5 @@ class RosemaryLLM extends Rosemary {
 }
 
 module.exports = RosemaryLLM;
+module.exports.RosemaryLLM = RosemaryLLM;
 

@@ -1,0 +1,68 @@
+{
+  "name": "agent-context",
+  "tasks": [
+    {
+      "id": "resolve-alias",
+      "description": "Resolve a common alias to its canonical concept.",
+      "setup": {
+        "leaves": [
+          { "id": "javascript", "content": "JavaScript", "tags": ["language"], "metadata": { "aliases": ["JS"] } },
+          { "id": "java", "content": "Java", "tags": ["language"] }
+        ]
+      },
+      "action": { "tool": "resolve", "input": "JS" },
+      "expect": { "canonicalId": "javascript" }
+    },
+    {
+      "id": "infer-prerequisite",
+      "description": "Infer a transitive prerequisite chain.",
+      "setup": {
+        "leaves": [
+          { "id": "javascript", "content": "JavaScript", "tags": ["skill"] },
+          { "id": "react", "content": "React", "tags": ["skill"] },
+          { "id": "next", "content": "Next.js", "tags": ["skill"] }
+        ],
+        "connections": [
+          { "from": "javascript", "to": "react", "type": "prerequisite-of", "directed": true },
+          { "from": "react", "to": "next", "type": "prerequisite-of", "directed": true }
+        ]
+      },
+      "action": { "tool": "infer", "leafId": "javascript", "relationshipType": "prerequisite-of" },
+      "expect": { "leafIds": ["react", "next"] }
+    },
+    {
+      "id": "bridge-process",
+      "description": "Find a process path from a bug to its shipping check.",
+      "setup": {
+        "leaves": [
+          { "id": "bug", "content": "Import drops saved connections", "tags": ["bug"] },
+          { "id": "test", "content": "JSON round-trip test with typed edges", "tags": ["test"] },
+          { "id": "ship", "content": "Release only after npm test passes", "tags": ["release"] }
+        ],
+        "connections": [
+          { "from": "bug", "to": "test", "type": "covered-by", "directed": false },
+          { "from": "test", "to": "ship", "type": "gated-by", "directed": false }
+        ]
+      },
+      "action": { "tool": "bridge", "fromId": "bug", "toId": "ship" },
+      "expect": { "pathIds": ["bug", "test", "ship"] }
+    },
+    {
+      "id": "context-pack-budget",
+      "description": "Build a compact context pack around a release decision.",
+      "setup": {
+        "leaves": [
+          { "id": "decision", "content": "Ship only after connection round-trip tests pass", "tags": ["release", "test"] },
+          { "id": "failure", "content": "Legacy import format silently drops edges", "tags": ["bug", "persistence"] },
+          { "id": "command", "content": "Run npm test before release", "tags": ["command", "test"] }
+        ],
+        "connections": [
+          { "from": "decision", "to": "failure", "type": "prevents", "directed": false },
+          { "from": "decision", "to": "command", "type": "verified-by", "directed": false }
+        ]
+      },
+      "action": { "tool": "context", "leafId": "decision", "depth": 1, "maxTokens": 200 },
+      "expect": { "relatedCount": 2 }
+    }
+  ]
+}

@@ -22,6 +22,16 @@ class Stem {
   }
 
   /**
+   * Adds a directed connection from one leaf to another.
+   * @param {string} fromLeafId - ID of the source leaf.
+   * @param {string} toLeafId - ID of the target leaf.
+   * @param {string} [relationshipType=''] - Type of relationship.
+   */
+  addDirectedConnection(fromLeafId, toLeafId, relationshipType = '') {
+    this._ensureLeafConnection(fromLeafId, toLeafId, relationshipType);
+  }
+
+  /**
    * Helper method to ensure a leaf connection exists.
    * @private
    * @param {string} fromLeafId - ID of the source leaf.
@@ -49,10 +59,21 @@ class Stem {
    * @returns {Object[]} An array of connection objects.
    */
   toJSON() {
-    return Array.from(this.connections.entries()).map(([leafId, connections]) => ({
-      leafId,
-      connections: Array.from(connections.entries())
-    }));
+    const seen = new Set();
+    const edges = [];
+    for (const [from, connections] of this.connections.entries()) {
+      for (const [to, type] of connections.entries()) {
+        const reverseType = this.getRelationshipType(to, from);
+        const isBidirectional = reverseType === type;
+        const key = isBidirectional
+          ? [from, to].sort().join('::')
+          : `${from}->${to}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        edges.push({ from, to, type, directed: !isBidirectional });
+      }
+    }
+    return edges;
   }
 
   /**
@@ -62,8 +83,19 @@ class Stem {
    */
   static fromJSON(json) {
     const stem = new Stem();
-    json.forEach(({ leafId, connections }) => {
-      stem.connections.set(leafId, new Map(connections));
+    (json || []).forEach((entry) => {
+      if (entry.from && entry.to) {
+        if (entry.directed) {
+          stem.addDirectedConnection(entry.from, entry.to, entry.type || '');
+        } else {
+          stem.addConnection(entry.from, entry.to, entry.type || '');
+        }
+        return;
+      }
+
+      if (entry.leafId && Array.isArray(entry.connections)) {
+        stem.connections.set(entry.leafId, new Map(entry.connections));
+      }
     });
     return stem;
   }

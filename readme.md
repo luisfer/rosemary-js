@@ -4,13 +4,13 @@
   <img src="assets/logo-2.png" alt="rosemary-js" width="240"/>
 </p>
 
-A graph-shaped knowledge store for Node. Stores ideas as leaves (nodes) with tags and typed connections, persists to a single JSON file, and exposes a CLI, a small HTTP API, and an optional LLM context layer.
+A graph-shaped knowledge store for Node. Leaves hold facts. Tags index them. Stems connect them. The store persists to one JSON file and exposes a library API, CLI, small HTTP API, and optional LLM context layer.
 
 - Library: `require('rosemary-js')`
 - CLI: `rosemary <command>`
 - Optional LLM layer: `require('rosemary-js/llm')`
 
-MIT. Node 18+.
+MIT. Node 20+.
 
 ## Install
 
@@ -41,14 +41,14 @@ console.log(brain.getRelatedLeaves(a).map(l => l.content));
 
 ## Versions
 
-Current: `1.2.1`. Versions `1.0.0` and `1.2.0` were tagged in git but contain bugs or were never published to npm; do not use them. Always install `1.2.1` or later. The full version table lives in [`CHANGELOG.md`](./CHANGELOG.md).
+Current: `2.0.0`. Version `2.0.0` is the clean Node 20 baseline. The full version table lives in [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Concepts
 
-- **Leaf** — a node holding `content` (string), `tags` (set), `id`, and timestamps.
-- **Stem** — the set of bidirectional connections between leaves, each with an optional `relationshipType` string.
-- **Tag** — a free-form label. Tags index leaves and feed fuzzy search.
-- **Connection** — a typed edge between two leaves.
+- **Leaf** — a node with `content`, `tags`, `metadata`, `id`, and timestamps.
+- **Stem** — the relationship map between leaves.
+- **Tag** — a free-form label used for lookup and fuzzy search.
+- **Connection** — a typed relationship between two leaves.
 
 Persistence is a single JSON file at `options.dataFile` (default `./rosemary-data.json`). The file is rewritten on every mutation when `autoSave` is true (default).
 
@@ -64,10 +64,10 @@ new Rosemary({ dataFile: './data.json', autoSave: true })
 
 | Method | Returns | Notes |
 |---|---|---|
-| `addLeaf(content, tags = [])` | `string` (id) | nanoid-style id |
+| `addLeaf(content, tags = [], metadata = {})` | `string` (id) | nanoid-style id |
 | `getLeafById(id)` | `Leaf` | throws if missing |
 | `getAllLeaves()` | `Leaf[]` | |
-| `updateLeaf(id, { content?, tags? })` | `Leaf` | atomic |
+| `updateLeaf(id, { content?, tags?, metadata? })` | `Leaf` | atomic |
 | `removeLeaf(id)` / `deleteLeaf(id)` | `void` / `boolean` | also removes connections |
 | `getLeavesByConnection(id)` | `Leaf[]` | |
 | `getLeavesByContent(query)` | `Leaf[]` | substring match |
@@ -88,10 +88,25 @@ new Rosemary({ dataFile: './data.json', autoSave: true })
 | Method | Returns |
 |---|---|
 | `connectLeaves(idA, idB, relationshipType = '')` | `void` |
+| `connectDirectedLeaves(fromId, toId, relationshipType = '')` | `void` |
 | `getRelatedLeaves(id, maxDistance = 2)` | `Leaf[]` (BFS) |
+| `infer(id, relationshipType = 'implies')` | `{ leaf, relationship, distance, path }[]` |
+| `walk(startId?, maxLength = 5, mode = 'random')` | `Leaf[]` |
+| `bridge(fromId, toId)` | `{ path, relationships, distance } \| null` |
 | `connectSimilarLeaves(threshold = 1)` | `void` (auto-connects on shared tags) |
 | `getMostConnectedLeaves(limit = 5)` | `Leaf[]` |
 | `getRandomConnectedChain(startId?, maxLength = 5)` | `Leaf[]` |
+
+Reserved relationship types are exported from `require('rosemary-js/edges')`: `implies`, `prerequisite-of`, `subset-of`, `co-occurs-with`, `contradicts`, and `aka`. Custom relationship strings still work.
+
+### Resolve
+
+```javascript
+const result = brain.resolve('JS');
+// => { canonical, candidates, confidence }
+```
+
+`resolve` combines exact content matches, tags, metadata aliases, `aka` relationships, and Fuse.js fuzzy matches. `RosemaryLLM.resolve()` also adds semantic candidates when embeddings are available.
 
 ### Sorting
 
@@ -101,7 +116,7 @@ new Rosemary({ dataFile: './data.json', autoSave: true })
 
 | Method | Notes |
 |---|---|
-| `loadData(file?)` / `saveData()` | reads/writes `dataFile` |
+| `loadData(file?)` / `saveData()` | reads/writes schema-versioned `dataFile` |
 | `importData(jsonString)` | parses an in-memory JSON string |
 | `exportToJSON(file)` / `importFromJSON(file)` | full snapshot |
 | `exportToCSV(file, { delimiter = ',' })` | leaves only (not connections) |
@@ -143,7 +158,7 @@ Programmatic:
 
 ```javascript
 const Rosemary = require('rosemary-js');
-const Builder = require('rosemary-js/src/Builder');
+const Builder = require('rosemary-js/builder');
 
 const brain = new Rosemary({ dataFile: './rosemary-data.json' });
 brain.loadData();
@@ -160,7 +175,7 @@ new Builder(brain)
 ## Optional LLM layer
 
 ```javascript
-const { RosemaryLLM } = require('rosemary-js/llm');
+const RosemaryLLM = require('rosemary-js/llm');
 
 const brain = new RosemaryLLM({ autoSave: false });
 const id = await brain.addEnhancedLeaf('Tokens expire after 24 hours', ['auth']);
@@ -182,7 +197,7 @@ const brain = new RosemaryLLM({
 Providers (`ClaudeProvider`) are stubs by default. They return the prompt for inspection unless constructed with `{ live: true }` and an API key. Never hardcode keys; read from environment variables or a secret manager.
 
 ```javascript
-const ClaudeProvider = require('rosemary-js/src/llm/providers/ClaudeProvider');
+const ClaudeProvider = require('rosemary-js/llm/providers/ClaudeProvider');
 
 const brain = new RosemaryLLM({
   claudeProvider: process.env.CLAUDE_API_KEY
@@ -204,10 +219,30 @@ ROSEMARY_DATA_FILE=./data.json node src/api.js
 - `examples/botany_paper_network/` — paper / author / tag graph (CSV and JSON variants)
 - `examples/thailand_mindmap/` — concept mindmap
 - `examples/llm/minimal_llm_example.js` — opt-in LLM context-building
+- `examples/mcp/` — dependency-free prototype of the future MCP package
+
+## Agent Context
+
+Use Rosemary when an agent needs structured recall without loading a full knowledge base into the prompt. Store facts, decisions, test commands, release constraints, and known failure modes as leaves. Connect them with typed relationships. Ask for a compact context pack.
+
+```mermaid
+flowchart LR
+  dataFile["JSON data file"] --> graph["Leaves, tags, relationships"]
+  graph --> resolve["resolve / infer / bridge"]
+  graph --> contextPack["buildPromptContext"]
+  contextPack --> agent["Coding agent"]
+  agent --> checks["tests / evals / release gates"]
+```
+
+Run the included context eval:
+
+```bash
+npm run eval:agent-context
+```
 
 ## Direction
 
-The forward-looking design notes — typed implication edges, concept resolution, drift walks, an MCP server, pluggable embedders — live in [`docs/direction.md`](./docs/direction.md). Non-goals in [`docs/non-goals.md`](./docs/non-goals.md).
+Forward-looking notes live in [`docs/direction.md`](./docs/direction.md). Non-goals live in [`docs/non-goals.md`](./docs/non-goals.md).
 
 ## Releasing
 
@@ -227,6 +262,6 @@ See [`CONTRIBUTING.md`](./CONTRIBUTING.md). Run `npm test` before opening a PR.
 
 MIT. See [`LICENSE.md`](./LICENSE.md).
 
-## Author
+## Maintainer
 
 Maintained by [@luisfer](https://github.com/luisfer).

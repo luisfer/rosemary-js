@@ -1,10 +1,10 @@
 # Direction
 
-Forward-looking notes for `rosemary-js`. These are proposed milestones, not promises. They sit on top of the existing graph store and do not break the v1.x `Rosemary` class. Each one is small and independently shippable.
+Forward-looking notes for `rosemary-js`. Items marked as implemented are available in the current source. The remaining items are proposed milestones, not promises. They sit on top of the existing graph store and do not break the v1.x `Rosemary` class. Each item is small and independently shippable.
 
-The shape of the library stays the same: a leaf is a node, the stem is the set of typed edges between leaves, the data file is one JSON. Everything below either makes the existing surface honester (real embeddings, typed edges with a vocabulary) or exposes the existing surface to LLMs in ways the current API does not.
+The shape of the library stays the same: a leaf is a node, the stem is the relationship map, and the data file is one JSON document. Everything below either makes existing behavior more explicit or exposes the graph to LLMs in ways the current API does not.
 
-## 1. Concept resolution: `resolve(input)`
+## 1. Concept resolution: `resolve(input)` — implemented
 
 ```javascript
 brain.resolve('jvscript');
@@ -19,13 +19,13 @@ It composes three signals:
 - fuzzy match (existing `Fuse.js` index);
 - embedding similarity (the embedder configured on `RosemaryLLM`, default n-gram).
 
-Returns the best canonical leaf id (or `null`), a ranked candidate list, and a confidence score. Useful as an autocompletion target, as a deduplication step on `addLeaf`, and as a tool surface for an LLM that wants to map a free-text concept onto the user's graph.
+Returns the best canonical candidate (or `null`), a ranked candidate list, and a confidence score. Use it for autocomplete, deduplication before `addLeaf`, and agent tools that map free text onto the graph.
 
-## 2. Typed edges with a small reserved vocabulary
+## 2. Typed relationships with a small reserved vocabulary — implemented
 
-`connectLeaves(a, b, relationshipType)` already accepts an arbitrary string. Add a small reserved vocabulary so that traversal and inference can do useful things:
+`connectLeaves(a, b, relationshipType)` already accepts an arbitrary string. A small reserved vocabulary gives traversal and inference predictable meanings:
 
-| Edge | Meaning | Example |
+| Relationship | Meaning | Example |
 |---|---|---|
 | `implies` | knowing A implies knowing/being B | `JavaScript implies HTML` |
 | `prerequisite-of` | A must be true / done / known before B | `Algebra prerequisite-of Calculus` |
@@ -34,35 +34,35 @@ Returns the best canonical leaf id (or `null`), a ranked candidate list, and a c
 | `contradicts` | A and B cannot both hold | `Vegan contradicts Carnivore` |
 | `aka` | A and B are alternative names | `JS aka JavaScript` |
 
-User-defined edge types continue to work; the reserved set is only for inference.
+User-defined relationship types continue to work. The reserved set is only for inference. `connectLeaves` remains bidirectional. Use `connectDirectedLeaves` when direction matters for `infer`.
 
 ```javascript
 brain.infer(leafId, 'implies'); // transitive closure across `implies` edges
 ```
 
-## 3. `walk(start, hops, mode)`
+## 3. `walk(start, hops, mode)` — implemented
 
 Generalize the existing `getRandomConnectedChain` into a single, parameterized walk:
 
 ```javascript
 brain.walk(startId, 5, 'random');           // existing behavior
 brain.walk(startId, 5, 'tag-affinity');     // bias next hop to leaves sharing tags
-brain.walk(startId, 5, 'semantic-drift');   // bias next hop by embedding similarity
+brain.walk(startId, 5, 'semantic-drift');   // tag-affinity fallback in the base class
 brain.walk(startId, 5, 'widest-bridge');    // bias next hop by edge degree
 ```
 
-Returns `Leaf[]`. The same primitive supports a stream-of-consciousness drift through the graph (`semantic-drift`), a tag-coherent narrative (`tag-affinity`), and a graph-bridging tour (`widest-bridge`).
+Returns `Leaf[]`. The same primitive supports a random path (`random`), a tag-coherent path (`tag-affinity`), and a high-degree path (`widest-bridge`).
 
-## 4. `bridge(a, b)`
+## 4. `bridge(a, b)` — implemented
 
 ```javascript
 brain.bridge(idA, idB); // shortest typed path
 // => [Leaf, Leaf, Leaf]  or  null
 ```
 
-Returns the shortest sequence of leaves from `a` to `b` along existing edges. If no path exists and a provider is configured, optionally call the LLM to propose intermediate concept leaves; insert them as `proposed: true` so a human can accept or reject before they become real nodes.
+Returns the shortest sequence of leaves from `a` to `b` along existing edges, plus the relationship records for each hop. A future provider-backed variant may propose intermediate concept leaves as `proposed: true` so a human can accept or reject them before they become real nodes.
 
-`bridge` is the API a graph-aware UI uses to draw arrows between two distant ideas, and the API an LLM agent uses to ask "how does this relate to that?".
+`bridge` is the API for asking how two leaves relate.
 
 ## 5. Pluggable embedders
 
@@ -75,7 +75,7 @@ The default `generateEmbedding` is a 64-dimensional character n-gram hash. It is
 
 ## 6. MCP server: `rosemary-mcp`
 
-The highest-leverage extension. A separate package (`rosemary-mcp`) implementing the [Model Context Protocol](https://modelcontextprotocol.io) so that Claude Desktop, Cursor, Claude Code, and any MCP-aware client can use a Rosemary store as long-term memory.
+A separate package (`rosemary-mcp`) should eventually implement the [Model Context Protocol](https://modelcontextprotocol.io). Claude Desktop, Cursor, Claude Code, and any MCP-aware client could then use a Rosemary store as project memory. The current repo includes a dependency-free prototype in `examples/mcp/` to test names, arguments, and responses before taking an MCP SDK dependency.
 
 Tool surface:
 
@@ -89,16 +89,16 @@ Tool surface:
 
 Configured per-vault: `MCP server "rosemary"` points at one `dataFile`. Multiple servers can run for multiple vaults. Read-write by default; read-only flag for shared/team vaults.
 
-This is the layer that turns Rosemary from "a Node library" into "memory that lives across sessions for any LLM that speaks MCP."
+This is the layer that lets an LLM client read and write a Rosemary store across sessions.
 
 ## Order
 
-1. Pluggable embedders (smallest change, biggest honesty win — already partially in place).
+1. Pluggable embedders and embedding rebuilds.
 2. Typed edge vocabulary + `infer`.
 3. `resolve(input)`.
 4. `walk(start, hops, mode)`.
 5. `bridge(a, b)`.
-6. `rosemary-mcp` (separate package, depends on 1–5).
+6. `rosemary-mcp` as a separate package after the prototype tool surface has eval coverage.
 
 Each one ships behind a minor version. None of them break the v1.x API.
 

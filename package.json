@@ -3,6 +3,7 @@
     "version": "2.0.0",
     "description": "A graph-shaped knowledge store for Node: leaves, tags, typed connections, fuzzy search, optional LLM context layer.",
     "main": "src/Rosemary.js",
+    "types": "index.d.ts",
     "bin": {
         "rosemary": "src/cli.js"
     },
@@ -12,6 +13,7 @@
     "scripts": {
         "start": "node src/cli.js",
         "test": "jest",
+        "eval:agent-context": "node scripts/evaluate-agent-context.js",
         "build": "echo \"No build step. Pure JS, no bundling.\" && exit 0",
         "visualize": "node scripts/visualize.js",
         "check-release": "node scripts/check-release.js",
@@ -66,7 +68,13 @@
         "scripts",
         "docs",
         "examples",
+        "evals",
         "assets",
+        "index.d.ts",
+        "llm.d.ts",
+        "builder.d.ts",
+        "edges.d.ts",
+        "claude-provider.d.ts",
         "readme.md",
         "LICENSE.md",
         "CHANGELOG.md",
@@ -74,9 +82,31 @@
         "AGENTS.md"
     ],
     "exports": {
-        ".": "./src/Rosemary.js",
-        "./llm": "./src/llm/RosemaryLLM.js",
-        "./builder": "./src/Builder.js",
+        ".": {
+            "types": "./index.d.ts",
+            "require": "./src/Rosemary.js",
+            "default": "./src/Rosemary.js"
+        },
+        "./llm": {
+            "types": "./llm.d.ts",
+            "require": "./src/llm/RosemaryLLM.js",
+            "default": "./src/llm/RosemaryLLM.js"
+        },
+        "./builder": {
+            "types": "./builder.d.ts",
+            "require": "./src/Builder.js",
+            "default": "./src/Builder.js"
+        },
+        "./edges": {
+            "types": "./edges.d.ts",
+            "require": "./src/edges.js",
+            "default": "./src/edges.js"
+        },
+        "./llm/providers/ClaudeProvider": {
+            "types": "./claude-provider.d.ts",
+            "require": "./src/llm/providers/ClaudeProvider.js",
+            "default": "./src/llm/providers/ClaudeProvider.js"
+        },
         "./api": "./src/api.js",
         "./package.json": "./package.json"
     }

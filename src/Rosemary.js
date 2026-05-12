@@ -10,6 +10,13 @@ const createDOMPurify = require('dompurify');
 const Fuse = require('fuse.js');
 const chalk = require('chalk');
 const os = require('os');
+const {
+  RESERVED_EDGE_TYPES,
+  isReservedEdgeType,
+  isTransitiveEdgeType
+} = require('./edges');
+
+const SCHEMA_VERSION = 2;
 
 class Rosemary {
   constructor(options = {}) {
@@ -18,6 +25,7 @@ class Rosemary {
     this.stem = new Stem();
     this.tags = new Set();
     this.autoSave = options.autoSave !== undefined ? options.autoSave : true;
+    this.schemaVersion = SCHEMA_VERSION;
   }
 
   /**
@@ -40,11 +48,7 @@ class Rosemary {
   saveData() {
     if (!this.autoSave) return;
 
-    const data = {
-      leaves: Array.from(this.leaves.values()).map(leaf => leaf.toJSON()),
-      connections: this.stem.toJSON(),
-      tags: Array.from(this.tags)
-    };
+    const data = this.createExportData();
 
     const jsonData = JSON.stringify(data, null, 2);
    
@@ -59,11 +63,12 @@ class Rosemary {
    * Adds a new leaf to the Rosemary instance.
    * @param {string} content - The content of the leaf.
    * @param {string[]} tags - An array of tags for the leaf.
+   * @param {Object} metadata - Free-form metadata for the leaf.
    * @returns {string} The ID of the newly created leaf.
    */
-  addLeaf(content, tags = []) {
+  addLeaf(content, tags = [], metadata = {}) {
     const id = this.generateId();
-    const leaf = new Leaf(id, content, tags);
+    const leaf = new Leaf(id, content, tags, metadata);
     this.leaves.set(id, leaf);
     this.addTags(tags);
     if (this.autoSave) this.saveData();
@@ -248,6 +253,71 @@ class Rosemary {
   }
 
   /**
+   * Connects two leaves with a directed relationship.
+   * @param {string} fromLeafId - The source leaf ID.
+   * @param {string} toLeafId - The target leaf ID.
+   * @param {string} relationshipType - The type of relationship.
+   */
+  connectDirectedLeaves(fromLeafId, toLeafId, relationshipType = '') {
+    if (fromLeafId === toLeafId) {
+      console.warn(chalk.yellow('Cannot connect a leaf to itself.'));
+      return;
+    }
+    this.validateLeafIds(fromLeafId, toLeafId);
+    this.stem.addDirectedConnection(fromLeafId, toLeafId, relationshipType);
+    if (this.autoSave) {
+      this.saveData();
+    }
+  }
+
+  /**
+   * Checks whether a relationship type is part of the reserved vocabulary.
+   * @param {string} relationshipType - Relationship type to check.
+   * @returns {boolean}
+   */
+  isReservedEdgeType(relationshipType) {
+    return isReservedEdgeType(relationshipType);
+  }
+
+  /**
+   * Infers all leaves reachable over a transitive relationship type.
+   * @param {string} leafId - Starting leaf ID.
+   * @param {string} relationshipType - Relationship type to traverse.
+   * @returns {Object[]} Inferred leaves with distance and path.
+   */
+  infer(leafId, relationshipType = RESERVED_EDGE_TYPES.IMPLIES) {
+    this.validateLeafIds(leafId);
+    if (!isTransitiveEdgeType(relationshipType)) {
+      return [];
+    }
+
+    const results = [];
+    const visited = new Set([leafId]);
+    const queue = [[leafId, 0, [leafId]]];
+
+    while (queue.length > 0) {
+      const [currentId, distance, pathSoFar] = queue.shift();
+      const connections = this.stem.getConnectedLeaves(currentId)
+        .filter(([, type]) => type === relationshipType);
+
+      for (const [nextId] of connections) {
+        if (visited.has(nextId)) continue;
+        const path = [...pathSoFar, nextId];
+        visited.add(nextId);
+        results.push({
+          leaf: this.getLeafById(nextId),
+          relationship: relationshipType,
+          distance: distance + 1,
+          path
+        });
+        queue.push([nextId, distance + 1, path]);
+      }
+    }
+
+    return results;
+  }
+
+  /**
    * Validates that all provided leaf IDs exist.
    * @param {...string} leafIds - The leaf IDs to validate.
    * @throws {Error} If any leaf ID is not found.
@@ -388,6 +458,7 @@ class Rosemary {
    */
   createExportData() {
     return {
+      schemaVersion: this.schemaVersion,
       leaves: Array.from(this.leaves.values()).map(leaf => leaf.toJSON()),
       connections: this.stem.toJSON(),
       tags: Array.from(this.tags)
@@ -401,10 +472,7 @@ class Rosemary {
    */
   importFromJSON(filename) {
     try {
-      const data = JSON.parse(fs.readFileSync(filename, 'utf8'));
-      this.leaves = new Map(data.leaves.map(leafData => [leafData.id, Leaf.fromJSON(leafData)]));
-      this.stem = Stem.fromJSON(data.connections);
-      this.tags = new Set(data.tags);
+      this.importData(fs.readFileSync(filename, 'utf8'));
     } catch (error) {
       throw new Error(`Failed to import from JSON: ${error.message}`);
     }
@@ -539,22 +607,36 @@ class Rosemary {
   importData(jsonData) {
     try {
       const data = JSON.parse(jsonData);
-      this.leaves = new Map((data.leaves || []).map(leaf => [leaf.id, Leaf.fromJSON(leaf)]));
-      this.stem = new Stem();
-      if (data.connections) {
-        data.connections.forEach(conn => {
-          if (conn.from && conn.to) {
-            this.stem.addConnection(conn.from, conn.to, conn.type || '');
-          }
-        });
-      }
-      this.tags = new Set(data.tags || []);
+      this.importObject(data);
     } catch (error) {
       console.error(chalk.red('Error importing data:'), error.message);
       this.leaves = new Map();
       this.stem = new Stem();
       this.tags = new Set();
     }
+  }
+
+  /**
+   * Imports Rosemary data from a parsed object.
+   * @param {Object} data - Parsed Rosemary data.
+   */
+  importObject(data = {}) {
+    this.schemaVersion = SCHEMA_VERSION;
+    this.leaves = new Map((data.leaves || []).map(leaf => [leaf.id, Leaf.fromJSON(leaf)]));
+    this.stem = Stem.fromJSON(data.connections || []);
+    this.tags = new Set(data.tags || this.collectTagsFromLeaves());
+  }
+
+  /**
+   * Collects tags from all leaves.
+   * @returns {string[]} Tags currently used by leaves.
+   */
+  collectTagsFromLeaves() {
+    const tags = new Set();
+    for (const leaf of this.leaves.values()) {
+      leaf.tags.forEach(tag => tags.add(tag));
+    }
+    return Array.from(tags);
   }
 
   /**
@@ -630,23 +712,119 @@ class Rosemary {
    * @returns {Leaf[]} An array representing the chain of leaves.
    */
   getRandomConnectedChain(startLeafId = null, maxLength = 5) {
-    let currentLeaf = startLeafId 
-      ? this.getLeafById(startLeafId) 
-      : this.getAllLeaves()[Math.floor(Math.random() * this.getAllLeaves().length)];
+    return this.walk(startLeafId, maxLength, 'random');
+  }
+
+  /**
+   * Walks through connected leaves using a selectable strategy.
+   * @param {string|null} startLeafId - ID of the starting leaf.
+   * @param {number} maxLength - Maximum number of leaves to return.
+   * @param {string} mode - `random`, `tag-affinity`, `semantic-drift`, or `widest-bridge`.
+   * @returns {Leaf[]} Ordered leaves in the walk.
+   */
+  walk(startLeafId = null, maxLength = 5, mode = 'random') {
+    const allLeaves = this.getAllLeaves();
+    if (allLeaves.length === 0 || maxLength <= 0) return [];
+
+    let currentLeaf = startLeafId
+      ? this.getLeafById(startLeafId)
+      : allLeaves[Math.floor(Math.random() * allLeaves.length)];
     const chain = [currentLeaf];
     const usedLeafIds = new Set([currentLeaf.id]);
 
     for (let i = 1; i < maxLength; i++) {
       const connections = this.stem.getConnectedLeaves(currentLeaf.id)
-        .filter(conn => !usedLeafIds.has(conn[0]));
+        .filter(([id]) => !usedLeafIds.has(id));
       if (connections.length === 0) break;
-      const nextLeafId = connections[Math.floor(Math.random() * connections.length)][0];
+
+      const nextLeafId = this.pickWalkNextLeaf(currentLeaf, connections, mode);
       currentLeaf = this.getLeafById(nextLeafId);
       chain.push(currentLeaf);
       usedLeafIds.add(currentLeaf.id);
     }
 
     return chain;
+  }
+
+  /**
+   * Selects the next leaf for `walk`.
+   * @private
+   */
+  pickWalkNextLeaf(currentLeaf, connections, mode) {
+    if (mode === 'random') {
+      return connections[Math.floor(Math.random() * connections.length)][0];
+    }
+
+    const scored = connections.map(([leafId]) => {
+      const leaf = this.getLeafById(leafId);
+      return {
+        leafId,
+        tagOverlap: this.countSharedTags(currentLeaf, leaf),
+        degree: this.stem.getConnectedLeaves(leafId).length
+      };
+    });
+
+    if (mode === 'tag-affinity' || mode === 'semantic-drift') {
+      scored.sort((a, b) => b.tagOverlap - a.tagOverlap || b.degree - a.degree || a.leafId.localeCompare(b.leafId));
+      return scored[0].leafId;
+    }
+
+    if (mode === 'widest-bridge') {
+      scored.sort((a, b) => b.degree - a.degree || b.tagOverlap - a.tagOverlap || a.leafId.localeCompare(b.leafId));
+      return scored[0].leafId;
+    }
+
+    throw new Error(`Unknown walk mode: ${mode}`);
+  }
+
+  /**
+   * Counts shared tags between two leaves.
+   * @param {Leaf} leafA - First leaf.
+   * @param {Leaf} leafB - Second leaf.
+   * @returns {number}
+   */
+  countSharedTags(leafA, leafB) {
+    return Array.from(leafA.tags).filter(tag => leafB.tags.has(tag)).length;
+  }
+
+  /**
+   * Finds the shortest typed path between two leaves.
+   * @param {string} fromLeafId - Source leaf ID.
+   * @param {string} toLeafId - Target leaf ID.
+   * @returns {Object|null} Path with leaves and relationship explanations.
+   */
+  bridge(fromLeafId, toLeafId) {
+    this.validateLeafIds(fromLeafId, toLeafId);
+    if (fromLeafId === toLeafId) {
+      return {
+        path: [this.getLeafById(fromLeafId)],
+        relationships: [],
+        distance: 0
+      };
+    }
+
+    const visited = new Set([fromLeafId]);
+    const queue = [[fromLeafId, [fromLeafId], []]];
+
+    while (queue.length > 0) {
+      const [currentId, pathSoFar, relationships] = queue.shift();
+      for (const [nextId, type] of this.stem.getConnectedLeaves(currentId)) {
+        if (visited.has(nextId)) continue;
+        const nextPath = [...pathSoFar, nextId];
+        const nextRelationships = [...relationships, { from: currentId, to: nextId, type }];
+        if (nextId === toLeafId) {
+          return {
+            path: nextPath.map(id => this.getLeafById(id)),
+            relationships: nextRelationships,
+            distance: nextPath.length - 1
+          };
+        }
+        visited.add(nextId);
+        queue.push([nextId, nextPath, nextRelationships]);
+      }
+    }
+
+    return null;
   }
 
   /**
@@ -684,6 +862,94 @@ class Rosemary {
     };
     const fuse = new Fuse(leaves, fuseOptions);
     return fuse.search(query).map(r => ({ ...r, item: r.item.leaf ? r.item.leaf : r.item }));
+  }
+
+  /**
+   * Resolves a noisy input string to the closest leaf or tag.
+   * @param {string} input - Input concept to resolve.
+   * @param {Object} options - Resolution options.
+   * @returns {Object} Canonical match, candidates, and confidence.
+   */
+  resolve(input, options = {}) {
+    const query = String(input || '').trim();
+    const normalized = query.toLowerCase();
+    const limit = options.limit || 5;
+    if (!normalized) {
+      return { canonical: null, candidates: [], confidence: 0 };
+    }
+
+    const candidates = [];
+    const addCandidate = (candidate) => {
+      const key = `${candidate.type}:${candidate.id || candidate.name}`;
+      const existing = candidates.find(item => item.key === key);
+      if (existing) {
+        existing.score = Math.max(existing.score, candidate.score);
+        existing.reasons = Array.from(new Set([...existing.reasons, ...candidate.reasons]));
+        return;
+      }
+      candidates.push({ key, ...candidate });
+    };
+
+    for (const leaf of this.leaves.values()) {
+      const content = String(leaf.content || '').toLowerCase();
+      if (content === normalized) {
+        addCandidate({ type: 'leaf', id: leaf.id, leaf, score: 1, reasons: ['exact-content'] });
+      } else if (content.includes(normalized)) {
+        addCandidate({ type: 'leaf', id: leaf.id, leaf, score: 0.75, reasons: ['partial-content'] });
+      }
+
+      const aliases = Array.isArray(leaf.metadata.aliases) ? leaf.metadata.aliases : [];
+      aliases.forEach(alias => {
+        if (String(alias).toLowerCase() === normalized) {
+          addCandidate({ type: 'leaf', id: leaf.id, leaf, score: 0.95, reasons: ['metadata-alias'] });
+        }
+      });
+
+      for (const tag of leaf.tags) {
+        const tagNormalized = tag.toLowerCase();
+        if (tagNormalized === normalized) {
+          addCandidate({ type: 'tag', name: tag, score: 0.92, reasons: ['exact-tag'] });
+        } else if (tagNormalized.includes(normalized)) {
+          addCandidate({ type: 'tag', name: tag, score: 0.7, reasons: ['partial-tag'] });
+        }
+      }
+    }
+
+    this.fuzzySearch(query, { threshold: options.threshold || 0.45, includeScore: true })
+      .forEach(result => {
+        addCandidate({
+          type: 'leaf',
+          id: result.item.id,
+          leaf: result.item,
+          score: Math.max(0, 1 - (result.score || 0)) * 0.85,
+          reasons: ['fuzzy']
+        });
+      });
+
+    for (const [fromId, connections] of this.stem.connections.entries()) {
+      for (const [toId, type] of connections.entries()) {
+        if (type !== RESERVED_EDGE_TYPES.AKA) continue;
+        const from = this.getLeafById(fromId);
+        const to = this.getLeafById(toId);
+        if (from.content.toLowerCase() === normalized) {
+          addCandidate({ type: 'leaf', id: to.id, leaf: to, score: 0.9, reasons: ['aka-edge'] });
+        }
+        if (to.content.toLowerCase() === normalized) {
+          addCandidate({ type: 'leaf', id: from.id, leaf: from, score: 0.9, reasons: ['aka-edge'] });
+        }
+      }
+    }
+
+    const ranked = candidates
+      .sort((a, b) => b.score - a.score || (a.id || a.name).localeCompare(b.id || b.name))
+      .slice(0, limit)
+      .map(({ key, ...candidate }) => candidate);
+
+    return {
+      canonical: ranked[0] || null,
+      candidates: ranked,
+      confidence: ranked[0] ? ranked[0].score : 0
+    };
   }
 
   /**
@@ -735,6 +1001,7 @@ class Rosemary {
    * @param {Object} updates
    * @param {string} [updates.content]
    * @param {string[]} [updates.tags]
+   * @param {Object} [updates.metadata]
    */
   updateLeaf(id, updates = {}) {
     const leaf = this.getLeafById(id);
@@ -744,12 +1011,26 @@ class Rosemary {
     }
     if (Array.isArray(updates.tags)) {
       leaf.tags = new Set(updates.tags);
-      this.addTags(updates.tags);
+      this.tags = new Set(this.collectTagsFromLeaves());
+    }
+    if (updates.metadata && typeof updates.metadata === 'object') {
+      leaf.updateMetadata(updates.metadata);
     }
     if (this.autoSave) this.saveData();
     return leaf;
   }
 
+  /**
+   * Returns the current Rosemary JSON schema version.
+   * @returns {number}
+   */
+  getSchemaVersion() {
+    return SCHEMA_VERSION;
+  }
+
 }
+
+Rosemary.SCHEMA_VERSION = SCHEMA_VERSION;
+Rosemary.RESERVED_EDGE_TYPES = RESERVED_EDGE_TYPES;
 
 module.exports = Rosemary;

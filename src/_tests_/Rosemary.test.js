@@ -200,13 +200,40 @@ describe('Rosemary Class', () => {
 
   it('should export and import JSON correctly', () => {
     const brain = new Rosemary();
-    brain.addLeaf('Leaf 1', ['tag1']);
-    brain.addLeaf('Leaf 2', ['tag2']);
+    const id1 = brain.addLeaf('Leaf 1', ['tag1'], { source: 'test' });
+    const id2 = brain.addLeaf('Leaf 2', ['tag2']);
+    brain.connectLeaves(id1, id2, 'related');
     const exportedData = brain.createExportData();
     const newBrain = new Rosemary();
     newBrain.importData(JSON.stringify(exportedData));
+    expect(exportedData.schemaVersion).toBe(Rosemary.SCHEMA_VERSION);
     expect(newBrain.leaves.size).toBe(2);
     expect(newBrain.tags.size).toBe(2);
+    expect(newBrain.getLeafById(id1).metadata).toEqual({ source: 'test' });
+    expect(newBrain.stem.getRelationshipType(id1, id2)).toBe('related');
+    expect(newBrain.stem.getRelationshipType(id2, id1)).toBe('related');
+  });
+
+  it('should load saved data with connections intact', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const tmpDir = path.join(__dirname, '../../tmp_roundtrip');
+    const dataFile = path.join(tmpDir, 'data.json');
+    fs.mkdirSync(tmpDir, { recursive: true });
+
+    const brain = new Rosemary({ dataFile, autoSave: false });
+    const id1 = brain.addLeaf('JavaScript', ['skill']);
+    const id2 = brain.addLeaf('React', ['skill']);
+    brain.connectLeaves(id1, id2, 'prerequisite-of');
+    brain.autoSave = true;
+    brain.saveData();
+
+    const loaded = new Rosemary({ dataFile, autoSave: false });
+    loaded.loadData(dataFile);
+
+    expect(loaded.getLeafById(id1).content).toBe('JavaScript');
+    expect(loaded.stem.getRelationshipType(id1, id2)).toBe('prerequisite-of');
+    expect(loaded.stem.getRelationshipType(id2, id1)).toBe('prerequisite-of');
   });
 
   it('should perform fuzzy search correctly', () => {
@@ -236,6 +263,52 @@ describe('Rosemary Class', () => {
     expect(chain.length).toBeLessThanOrEqual(3);
     expect(chain[0].id).toBe(id1);
     expect(chain.map(leaf => leaf.id)).toContain(id2);
+  });
+
+  it('should support directed inference over reserved edge types', () => {
+    const brain = new Rosemary({ autoSave: false });
+    const js = brain.addLeaf('JavaScript');
+    const react = brain.addLeaf('React');
+    const next = brain.addLeaf('Next.js');
+
+    brain.connectDirectedLeaves(js, react, Rosemary.RESERVED_EDGE_TYPES.PREREQUISITE_OF);
+    brain.connectDirectedLeaves(react, next, Rosemary.RESERVED_EDGE_TYPES.PREREQUISITE_OF);
+
+    const inferred = brain.infer(js, Rosemary.RESERVED_EDGE_TYPES.PREREQUISITE_OF);
+
+    expect(inferred.map(item => item.leaf.id)).toEqual([react, next]);
+    expect(inferred[1].path).toEqual([js, react, next]);
+  });
+
+  it('should resolve concepts from content, tags, aliases, and aka edges', () => {
+    const brain = new Rosemary({ autoSave: false });
+    const js = brain.addLeaf('JavaScript', ['language'], { aliases: ['JS'] });
+    const react = brain.addLeaf('React.js', ['frontend']);
+
+    brain.connectLeaves(js, react, Rosemary.RESERVED_EDGE_TYPES.AKA);
+
+    const alias = brain.resolve('JS');
+    const fuzzy = brain.resolve('React');
+
+    expect(alias.canonical.id).toBe(js);
+    expect(alias.canonical.reasons).toContain('metadata-alias');
+    expect(fuzzy.canonical.id).toBe(react);
+  });
+
+  it('should walk by tag affinity and bridge related leaves', () => {
+    const brain = new Rosemary({ autoSave: false });
+    const a = brain.addLeaf('Auth tokens', ['auth']);
+    const b = brain.addLeaf('Refresh endpoint', ['auth']);
+    const c = brain.addLeaf('Billing page', ['billing']);
+    brain.connectLeaves(a, c, 'mentions');
+    brain.connectLeaves(a, b, 'resolved-by');
+
+    const walk = brain.walk(a, 2, 'tag-affinity');
+    const bridge = brain.bridge(b, c);
+
+    expect(walk.map(leaf => leaf.id)).toEqual([a, b]);
+    expect(bridge.path.map(leaf => leaf.id)).toEqual([b, a, c]);
+    expect(bridge.relationships.length).toBe(2);
   });
 
   it('should connect similar leaves correctly', () => {

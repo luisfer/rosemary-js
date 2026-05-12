@@ -1,6 +1,6 @@
 /**
  * Represents a Leaf in the Rosemary knowledge graph.
- * A Leaf contains content, tags, and metadata.
+ * A Leaf contains content, tags, metadata, and timestamps.
  */
 class Leaf {
   /**
@@ -8,11 +8,13 @@ class Leaf {
    * @param {string} id - Unique identifier for the leaf.
    * @param {string} content - The main content of the leaf.
    * @param {string[]} [tags=[]] - Array of tags associated with the leaf.
+   * @param {Object} [metadata={}] - Free-form metadata associated with the leaf.
    */
-  constructor(id, content, tags = []) {
+  constructor(id, content, tags = [], metadata = {}) {
     this.id = id;
     this.content = content;
     this.tags = new Set(tags);
+    this.metadata = metadata && typeof metadata === 'object' ? { ...metadata } : {};
     this.createdAt = Date.now();
     this.lastModified = this.createdAt;
   }
@@ -58,6 +60,15 @@ class Leaf {
   }
 
   /**
+   * Replaces the leaf metadata.
+   * @param {Object} metadata - Free-form metadata to store on the leaf.
+   */
+  updateMetadata(metadata = {}) {
+    this.metadata = metadata && typeof metadata === 'object' ? { ...metadata } : {};
+    this.updateLastModified();
+  }
+
+  /**
    * Updates the last modified timestamp.
    */
   updateLastModified() {
@@ -73,6 +84,7 @@ class Leaf {
       id: this.id,
       content: this.content,
       tags: Array.from(this.tags),
+      metadata: this.metadata,
       createdAt: this.createdAt,
       lastModified: this.lastModified
     };
@@ -84,9 +96,9 @@ class Leaf {
    * @returns {Leaf} A new Leaf instance.
    */
   static fromJSON(json) {
-    const leaf = new Leaf(json.id, json.content, json.tags);
-    leaf.createdAt = json.createdAt;
-    leaf.lastModified = json.lastModified;
+    const leaf = new Leaf(json.id, json.content, json.tags || [], json.metadata || {});
+    leaf.createdAt = json.createdAt || Date.now();
+    leaf.lastModified = json.lastModified || leaf.createdAt;
     return leaf;
   }
 

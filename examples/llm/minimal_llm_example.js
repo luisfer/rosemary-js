@@ -1,4 +1,4 @@
-const { RosemaryLLM } = require('../../src/llm/RosemaryLLM');
+const RosemaryLLM = require('../../src/llm/RosemaryLLM');
 
 (async () => {
   const brain = new RosemaryLLM();
