@@ -1,6 +1,6 @@
 # Direction
 
-Forward-looking notes for `rosemary-js`. Items marked as implemented are available in the current source. The remaining items are proposed milestones, not promises. They sit on top of the existing graph store and do not break the v1.x `Rosemary` class. Each item is small and independently shippable.
+Forward-looking notes for `rosemary-js`. Items marked as implemented are available in the current source and shipped in `3.0.0` (`Agent Context`). The remaining items are proposed milestones, not promises. They sit on top of the existing graph store and do not break the v1.x `Rosemary` class API.
 
 The shape of the library stays the same: a leaf is a node, the stem is the relationship map, and the data file is one JSON document. Everything below either makes existing behavior more explicit or exposes the graph to LLMs in ways the current API does not.
 
@@ -93,14 +93,14 @@ This is the layer that lets an LLM client read and write a Rosemary store across
 
 ## Order
 
-1. Pluggable embedders and embedding rebuilds.
-2. Typed edge vocabulary + `infer`.
-3. `resolve(input)`.
-4. `walk(start, hops, mode)`.
-5. `bridge(a, b)`.
+1. Pluggable embedders and embedding rebuilds — implemented in `3.0.0`.
+2. Typed edge vocabulary + `infer` — implemented in `3.0.0`.
+3. `resolve(input)` — implemented in `3.0.0`.
+4. `walk(start, hops, mode)` — implemented in `3.0.0`.
+5. `bridge(a, b)` — implemented in `3.0.0`.
 6. `rosemary-mcp` as a separate package after the prototype tool surface has eval coverage.
 
-Each one ships behind a minor version. None of them break the v1.x API.
+The implemented items shipped together as the `3.0.0` agent-context release. `rosemary-mcp` remains separate so the core package keeps zero MCP runtime dependencies.
 
 ## Maintenance: CommonJS → ESM
 
@@ -112,4 +112,4 @@ Rosemary-js currently ships as CommonJS (`require()` everywhere). Several upstre
 
 Dependabot still ships patch and minor bumps for these; major bumps are explicitly ignored in `.github/dependabot.yml` until the migration happens.
 
-The migration is a single deliberate breaking change: convert `src/**/*.js` to ESM, switch `package.json` to `"type": "module"`, ship a CJS shim via `exports` for downstream consumers that still use `require('rosemary-js')`. Worth doing once the v2.x feature surface above stabilizes, not before — the cost of breaking downstream `require()` users twice in a year is higher than the cost of staying on chalk 4 / marked 14 / jsdom 24 for now.
+The migration is a single deliberate breaking change: convert `src/**/*.js` to ESM, switch `package.json` to `"type": "module"`, ship a CJS shim via `exports` for downstream consumers that still use `require('rosemary-js')`. Worth doing when the dependency pressure justifies a new major, not before. The cost of breaking downstream `require()` users twice in a year is higher than the cost of staying on chalk 4 / marked 14 / jsdom 24 for now.

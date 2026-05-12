@@ -41,7 +41,9 @@ console.log(brain.getRelatedLeaves(a).map(l => l.content));
 
 ## Versions
 
-Current: `2.0.0`. Version `2.0.0` is the clean Node 20 baseline. The full version table lives in [`CHANGELOG.md`](./CHANGELOG.md).
+Current: `3.0.1`.
+
+Version `3.0.1` is a documentation-sync patch for `3.0.0` (`Agent Context`). Version `3.0.0` adds schema-versioned graph persistence, typed relationships, graph traversal, concept resolution, prompt-context packing, TypeScript declarations, and agent-context evals. Version `2.0.0` remains the clean Node 20 baseline. The full version table lives in [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Concepts
 
@@ -208,7 +210,7 @@ const brain = new RosemaryLLM({
 
 ## HTTP API
 
-`src/api.js` is an Express server exposing `/api/v1/*` and Swagger UI at `/api-docs`. Requires `express`, `body-parser`, `swagger-jsdoc`, `swagger-ui-express` (declared as `optionalDependencies` from 1.3.0 onwards). Run with:
+`src/api.js` is an Express server exposing `/api/v1/*` and Swagger UI at `/api-docs`. Requires `express`, `body-parser`, `swagger-jsdoc`, `swagger-ui-express` (declared as `optionalDependencies` from 2.0.0 onwards). Run with:
 
 ```bash
 ROSEMARY_DATA_FILE=./data.json node src/api.js

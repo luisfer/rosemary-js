@@ -4,6 +4,13 @@ All notable changes to this project are documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/). Versioning follows [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.1] - 2026-05-13
+
+### Fixed
+- README current-version text now points at the 3.x release line.
+- Direction notes now describe the implemented agent-context items as shipped in 3.0.0 instead of future minor milestones.
+- HTTP API docs now point to the correct 2.0.0 optional-dependency baseline.
+
 ## [3.0.0] - 2026-05-12 (Agent Context)
 
 ### Added
@@ -16,7 +23,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/). Version
 - `npm run eval:agent-context` and `evals/agent-context.json` for recall, inference, bridge, and context-pack checks.
 
 ### Changed
-- README and LLM docs now use public package entrypoints, Node 20, and the current `2.0.0` baseline.
+- README and LLM docs now use public package entrypoints, Node 20, and the current `3.0.0` release line.
 - Version bumped to 3.0.0 to mark Rosemary's pivot toward agent-readable graph context, typed relationships, and context packing as first-class concerns.
 
 ### Fixed
