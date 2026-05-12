@@ -1,6 +1,6 @@
 {
     "name": "rosemary-js",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "description": "A graph-shaped knowledge store for Node: leaves, tags, typed connections, fuzzy search, optional LLM context layer.",
     "main": "src/Rosemary.js",
     "types": "index.d.ts",
