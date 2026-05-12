@@ -4,7 +4,7 @@ All notable changes to this project are documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/). Versioning follows [SemVer](https://semver.org/spec/v2.0.0.html).
 
-## [2.1.0] - 2026-05-12
+## [3.0.0] - 2026-05-12 (Agent Context)
 
 ### Added
 - Schema-versioned JSON export with canonical connection records and backward-compatible legacy connection import.
@@ -17,6 +17,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/). Version
 
 ### Changed
 - README and LLM docs now use public package entrypoints, Node 20, and the current `2.0.0` baseline.
+- Version bumped to 3.0.0 to mark Rosemary's pivot toward agent-readable graph context, typed relationships, and context packing as first-class concerns.
 
 ### Fixed
 - Saved connection JSON now round-trips through `loadData`, `importData`, and `importFromJSON` without silently dropping edges.
