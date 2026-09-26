@@ -1,0 +1,69 @@
+{
+  "about": "Experiment 2. Each answer needs several files or a search across the repository. 's0' is the reference answer before the changes in setup2.js, when every note is fresh; 's1' is the reference answer after them. 's1Note' is the state of the stored answer in s1: 'changed' (flagged stale, and the answer changed), 'touched' (flagged stale, answer unchanged), or 'fresh'. 'note' is the stored answer in answers2.js.",
+  "questions": [
+    {
+      "id": "unsaved",
+      "note": "q:unsaved",
+      "s1Note": "changed",
+      "q": "Which public methods of the Rosemary class (src/Rosemary.js) change leaves, tags, or connections in memory but never write the data file, even when autoSave is on?",
+      "s0": "addTags, importData, importObject, importFromJSON, and importFromCSV (through its helper processCsvImport). Naming processCsvImport separately is fine, and so is adding loadData with an existing file. Every other method that changes data saves when autoSave is on.",
+      "s1": "addTags, importData, importObject, importFromJSON, importFromCSV (through its helper processCsvImport), and renameTag. Naming processCsvImport separately is fine, and so is adding loadData with an existing file."
+    },
+    {
+      "id": "untested",
+      "note": "q:untested",
+      "s1Note": "changed",
+      "q": "Which methods declared for the Rosemary class in index.d.ts are never called by name in any Jest test file (*.test.js)?",
+      "s0": "7 methods: updateLeaf, getAllTags, getLeavesByConnection, exportToJSON, exportToCSV, importFromCSV, getLeafContentAsHTML.",
+      "s1": "6 methods: renameTag, getAllTags, getLeavesByConnection, exportToCSV, importFromCSV, getLeafContentAsHTML. test/integration/export.test.js now calls exportToJSON and updateLeaf."
+    },
+    {
+      "id": "cli_docs",
+      "note": "q:cli-docs",
+      "s1Note": "changed",
+      "q": "Which commands does src/cli.js define that the CLI section of readme.md does not list, and which commands listed there does src/cli.js not define?",
+      "s0": "Defined but not listed: rosemary and hello. Every listed command is defined.",
+      "s1": "Defined but not listed: stats, rosemary, and hello. Every listed command is defined."
+    },
+    {
+      "id": "data_file",
+      "note": "q:data-file",
+      "s1Note": "touched",
+      "q": "For each entry point (the rosemary CLI, the REST API server in src/api.js, scripts/visualize.js, and code that constructs Rosemary directly), where does the data-file path come from, and what is the default when nothing is set?",
+      "s0": "CLI: the -d/--data-file option, then ROSEMARY_DATA_FILE. API server: ROSEMARY_DATA_FILE only. scripts/visualize.js: ROSEMARY_DATA_FILE only. Constructor: options.dataFile. Every default is rosemary-data.json in the current working directory (process.cwd()).",
+      "s1": "Same as s0."
+    },
+    {
+      "id": "connect",
+      "note": "q:connect",
+      "s1Note": "touched",
+      "q": "How do the rosemary CLI's connect command, the REST API's POST /api/v1/connect, and Rosemary#connectLeaves each handle an unknown leaf id, the same id given twice, a missing id, and the relationship type?",
+      "s0": "Unknown id: connectLeaves throws 'Leaf with id X not found'; the CLI prints the error (exit code 0) and the API returns 400. Same id twice: connectLeaves logs a warning and returns without connecting or throwing; the CLI and the API then report success. Missing id: the CLI (commander) refuses the command because both ids are required arguments; the API does not check, so two missing ids act like the same id (200, nothing connected) and one missing id gives 400 (not found). Relationship type: never validated or normalized; any string is stored, default ''.",
+      "s1": "Same as s0."
+    },
+    {
+      "id": "release",
+      "note": "q:release",
+      "s1Note": "fresh",
+      "q": "What happens, in order, from `npm run release -- patch` until the package is published to npm? Name the file or npm script that performs each check or step.",
+      "s0": "scripts/release.js: validates the bump argument; requires a clean working tree; requires branch main unless --force-branch (--dry-run stops here); runs npm test; runs npm version patch (bumps package.json, commits 'chore(release): <version>', tags v<version>); git push --follow-tags; npm publish. npm publish runs the prepublishOnly script from package.json: npm test, then scripts/check-release.js (name and version present, clean tree, branch printed only, tag v<version> points at HEAD, tag exists on origin, version not already on npm, CHANGELOG.md mentions the version). Then the package is published.",
+      "s1": "Same as s0."
+    },
+    {
+      "id": "llm_docs",
+      "note": "q:llm-docs",
+      "s1Note": "fresh",
+      "q": "Which methods of RosemaryLLM (src/llm/RosemaryLLM.js) are missing from the method table in docs/llm.md, and does the table list any method that does not exist?",
+      "s0": "Missing from the table: cosineSimilarity, rebuildMissingEmbeddings, and scoreContextRelevance. Every method in the table exists.",
+      "s1": "Same as s0."
+    },
+    {
+      "id": "scoring",
+      "note": "q:scoring",
+      "s1Note": "fresh",
+      "q": "How does RosemaryLLM#buildPromptContext score related leaves, and how does it prune them to fit maxTokens? Give each score component with its weight, and the pruning steps in order.",
+      "s0": "Score = 1/distance + 0.15 per shared tag (at most 0.3) + 0.2 if the connection has a relationship type + recency (0.1 minus 0.002 per day since last modified, not below 0) + 0.2 x cosine similarity of the two embeddings when both exist (not below 0); the total is capped at 1. Related leaves are sorted by score, then distance. Pruning runs only when the estimate (JSON length / 4) exceeds maxTokens: 1. drop related leaves scoring below 0.5; 2. keep at most 3 related leaves; 3. remove the core leaf's tags. It returns the result even if it is still over the limit.",
+      "s1": "Same as s0."
+    }
+  ]
+}
