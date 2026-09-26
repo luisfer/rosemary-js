@@ -1,22 +1,24 @@
 #!/usr/bin/env node
 'use strict';
 
-// Summarizes experiment 2 as Markdown tables.
+// Summarizes experiments 2 and 3 as Markdown tables.
 // Usage: node experiments/knowledge-tree/eval/analyze2.js
 //
-// Reads runs2.jsonl, questions2.json, and grades2.json (final grade per question,
-// state, and condition) from this directory.
+// Reads runs2.jsonl and runs3.jsonl (experiment 3 adds condition C3), questions2.json,
+// and grades2.json and grades3.json (final grade per question, state, and condition)
+// from this directory.
 
 const fs = require('fs');
 const path = require('path');
 
 const here = __dirname;
-const runs = fs.readFileSync(path.join(here, 'runs2.jsonl'), 'utf8').trim().split('\n').map(line => JSON.parse(line));
+const load = (file, parse) => (fs.existsSync(path.join(here, file)) ? parse(fs.readFileSync(path.join(here, file), 'utf8')) : []);
+const lines = text => text.trim().split('\n').map(line => JSON.parse(line));
+const runs = [...load('runs2.jsonl', lines), ...load('runs3.jsonl', lines)];
 const { questions } = JSON.parse(fs.readFileSync(path.join(here, 'questions2.json'), 'utf8'));
-const gradesFile = path.join(here, 'grades2.json');
-const grades = fs.existsSync(gradesFile) ? JSON.parse(fs.readFileSync(gradesFile, 'utf8')).grades : [];
+const grades = [...load('grades2.json', t => JSON.parse(t).grades), ...load('grades3.json', t => JSON.parse(t).grades)];
 
-const CONDS = ['A', 'B2', 'C2'];
+const CONDS = ['A', 'B2', 'C2', 'C3'].filter(c => runs.some(r => r.cond === c));
 const STATES = [
   { id: 's0', name: 's0: every note fresh' },
   { id: 's1', name: 's1: after three changes' }
@@ -67,7 +69,7 @@ const table = (head, rows) => {
   out.push('');
 };
 
-out.push('### By state and condition (8 questions each)', '');
+out.push('### By state and condition (8 questions each; C3 is experiment 3)', '');
 table(
   ['State', 'Condition', 'Tokens, mean', 'Over A, mean', 'Tool calls, mean', 'Seconds, mean', 'Runs that read no repository file', 'Correct', 'Partial', 'Stale', 'Incorrect'],
   STATES.flatMap(s => CONDS.map(cond => {
@@ -80,7 +82,7 @@ table(
 );
 
 out.push('### Paired comparisons of tokens (same question and state)', '');
-const pairs = [['C2', 'A'], ['B2', 'A'], ['C2', 'B2']];
+const pairs = [['C2', 'A'], ['B2', 'A'], ['C2', 'B2'], ['C3', 'A'], ['C3', 'C2']].filter(([x, y]) => CONDS.includes(x) && CONDS.includes(y));
 const scopes = [
   { name: 's0', items: questions.map(q => [q, 's0']) },
   { name: 's1', items: questions.map(q => [q, 's1']) },
@@ -93,13 +95,13 @@ table(['Scope', 'X vs Y', 'X cheaper', 'Mean X minus Y', '95% bootstrap interval
 })));
 
 out.push('### s1 by question group: tokens over A (mean)', '');
-table(['Group', 'A, mean tokens', 'B2', 'C2'], GROUPS.map(g => {
+table(['Group', 'A, mean tokens', ...CONDS.slice(1)], GROUPS.map(g => {
   const qs = questions.filter(g.test);
-  return [g.name, fmt(mean(qs.map(q => run(q.id, 's1', 'A').tokens))), ...['B2', 'C2'].map(c => signed(mean(qs.map(q => overA(q, 's1', c)))))];
+  return [g.name, fmt(mean(qs.map(q => run(q.id, 's1', 'A').tokens))), ...CONDS.slice(1).map(c => signed(mean(qs.map(q => overA(q, 's1', c)))))];
 }));
 
 out.push('### Per question: tokens for A, difference from A for the others, and whether the run read a repository file', '');
-table(['Question', 'State', 's1 note', 'A', 'B2', 'C2'], questions.flatMap(q => STATES.map(s => {
+table(['Question', 'State', 's1 note', ...CONDS], questions.flatMap(q => STATES.map(s => {
   const cell = cond => {
     const r = run(q.id, s.id, cond);
     const g = gradeOf(q.id, s.id, cond);
@@ -107,7 +109,7 @@ table(['Question', 'State', 's1 note', 'A', 'B2', 'C2'], questions.flatMap(q => 
     const read = cond === 'A' ? '' : readRepo(r) ? ', read files' : ', notes only';
     return `${value}${read}${g && g !== 'correct' ? ` (${g})` : ''}`;
   };
-  return [q.id, s.id, s.id === 's0' ? 'fresh' : q.s1Note, cell('A'), cell('B2'), cell('C2')];
+  return [q.id, s.id, s.id === 's0' ? 'fresh' : q.s1Note, ...CONDS.map(cell)];
 })));
 
 process.stdout.write(out.join('\n'));

@@ -8,7 +8,8 @@ An agent that reads a codebase or a set of documents builds an understanding of 
 - Each note records its inputs and their hashes. Inputs are source files, the result of a file search (`glob:<pattern>`), or other notes.
 - When an input changes, `todo` lists the notes to refresh now and the notes to re-check after that, in dependency order.
 - If a note still holds after a re-check, the agent confirms it. Its text stays the same, so the notes built on it stay fresh.
-- `read --budget N` prints the notes as an outline that fits N tokens. A branch that does not fit ends in `expand <id>`.
+- `read --budget N` lists the stored answers first, one line each with its status, then prints the other notes as an outline that fits N tokens. A branch that does not fit ends in `expand <id>`.
+- Each note keeps a snapshot of its sources. When a note is stale, `why` prints a diff of what changed since it was written, so the agent can check the change instead of re-reading every source.
 - The library never calls a model. The agent that reads the files writes the notes.
 
 ## Demo
@@ -50,7 +51,7 @@ A note is in one of three states:
 - `stale`: an input changed.
 - `waiting`: its inputs match, but a note it uses is stale.
 
-The tree is stored in `<repo>/.rosemary/tree.json`.
+The tree is stored in `<repo>/.rosemary/tree.json`, and the source snapshots in `<repo>/.rosemary/snapshots/`.
 
 ## Related work (checked 2026-09-26)
 
@@ -65,4 +66,5 @@ The tree is stored in `<repo>/.rosemary/tree.json`.
 - Hashes are per file, so any edit to a file flags its note. `confirm` is the cheap answer when the edit does not matter.
 - Freshness is not correctness. A wrong note stays wrong until its inputs change or someone reviews it.
 - Source hashes are recomputed on every command. A real implementation would cache them by size and modification time.
+- Snapshots copy every source file. In a git repository, a real implementation would record the commit and read old versions from git.
 - `eval/` compares agents with the tree, with the same notes as one file, and with no notes. In the first experiment, reading the files directly was cheapest and every condition answered correctly. See `eval/results.md`.

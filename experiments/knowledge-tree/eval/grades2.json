@@ -1,0 +1,396 @@
+{
+  "about": "Final grade per question, state, and condition for experiment 2. Two graders worked blind from separate shuffles, with sentences that mentioned notes or the tree removed from the answers, and could check each version of the repository. They agreed on all 48 grades.",
+  "grades": [
+    {
+      "qid": "cli_docs",
+      "state": "s0",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "cli_docs",
+      "state": "s0",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "cli_docs",
+      "state": "s0",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "cli_docs",
+      "state": "s1",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "cli_docs",
+      "state": "s1",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "cli_docs",
+      "state": "s1",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "connect",
+      "state": "s0",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "connect",
+      "state": "s0",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "connect",
+      "state": "s0",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "connect",
+      "state": "s1",
+      "cond": "A",
+      "grade": "partial",
+      "grader1": "partial",
+      "grader2": "partial",
+      "reason": "Unknown id, duplicate id, the CLI missing-id case and the type are right, but for the API it only says a missing id gives 400 and never covers two missing ids hitting the same-id branch and returning 200."
+    },
+    {
+      "qid": "connect",
+      "state": "s1",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "connect",
+      "state": "s1",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "data_file",
+      "state": "s0",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "data_file",
+      "state": "s0",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "data_file",
+      "state": "s0",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "data_file",
+      "state": "s1",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "data_file",
+      "state": "s1",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "data_file",
+      "state": "s1",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "llm_docs",
+      "state": "s0",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "llm_docs",
+      "state": "s0",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "llm_docs",
+      "state": "s0",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "llm_docs",
+      "state": "s1",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "llm_docs",
+      "state": "s1",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "llm_docs",
+      "state": "s1",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "release",
+      "state": "s0",
+      "cond": "A",
+      "grade": "partial",
+      "grader1": "partial",
+      "grader2": "partial",
+      "reason": "The steps it gives are correct and in order, but it leaves out release.js validating the bump argument and check-release.js checking name/version."
+    },
+    {
+      "qid": "release",
+      "state": "s0",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "release",
+      "state": "s0",
+      "cond": "C2",
+      "grade": "partial",
+      "grader1": "partial",
+      "grader2": "partial",
+      "reason": "The steps it gives are correct and in order, but it leaves out release.js validating the bump argument and check-release.js checking name/version."
+    },
+    {
+      "qid": "release",
+      "state": "s1",
+      "cond": "A",
+      "grade": "partial",
+      "grader1": "partial",
+      "grader2": "partial",
+      "reason": "The steps it gives are correct and in order, but it leaves out release.js validating the bump argument and check-release.js checking name/version."
+    },
+    {
+      "qid": "release",
+      "state": "s1",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "release",
+      "state": "s1",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "scoring",
+      "state": "s0",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "scoring",
+      "state": "s0",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "scoring",
+      "state": "s0",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "scoring",
+      "state": "s1",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "scoring",
+      "state": "s1",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "scoring",
+      "state": "s1",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "unsaved",
+      "state": "s0",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "unsaved",
+      "state": "s0",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "unsaved",
+      "state": "s0",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct",
+      "extra_error": true,
+      "reason": "The method list matches the reference, but it wrongly claims no connection-mutating method skips saving, although importData/importObject replace the Stem without saving, and that loadData only loads an existing file."
+    },
+    {
+      "qid": "unsaved",
+      "state": "s1",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "unsaved",
+      "state": "s1",
+      "cond": "B2",
+      "grade": "stale",
+      "grader1": "stale",
+      "grader2": "stale",
+      "reason": "Gives the version 1 list of five methods, leaves out renameTag and claims every other mutating method saves."
+    },
+    {
+      "qid": "unsaved",
+      "state": "s1",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "untested",
+      "state": "s0",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "untested",
+      "state": "s0",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "untested",
+      "state": "s0",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "untested",
+      "state": "s1",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "untested",
+      "state": "s1",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "untested",
+      "state": "s1",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    }
+  ]
+}

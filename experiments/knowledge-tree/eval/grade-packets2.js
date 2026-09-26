@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 'use strict';
 
-// Builds two blind grading packets for experiment 2 from runs2.jsonl.
-// Usage: node experiments/knowledge-tree/eval/grade-packets2.js <out-dir>
+// Builds two blind grading packets for experiments 2 and 3.
+// Usage: node experiments/knowledge-tree/eval/grade-packets2.js <out-dir> [runs file]
+// The runs file defaults to runs2.jsonl; experiment 3 uses runs3.jsonl.
 // One section per question and repository state, each with its own reference answer.
 // Writes <out-dir>/packet-1.md and packet-2.md, and the label maps and the list of
 // redactions to <out-dir>/private/, which the graders must not read.
@@ -13,7 +14,7 @@ const crypto = require('crypto');
 
 const OUT = path.resolve(process.argv[2] || 'grading-2');
 fs.mkdirSync(path.join(OUT, 'private'), { recursive: true });
-const rows = fs.readFileSync(path.join(__dirname, 'runs2.jsonl'), 'utf8').trim().split('\n').map(line => JSON.parse(line));
+const rows = fs.readFileSync(path.join(__dirname, process.argv[3] || 'runs2.jsonl'), 'utf8').trim().split('\n').map(line => JSON.parse(line));
 const { questions } = JSON.parse(fs.readFileSync(path.join(__dirname, 'questions2.json'), 'utf8'));
 
 const REVEAL = /notes\.md|notes file|knowledge[- ]tree|\bthe tree\b|tree's|\bnotes?\b|\bstale\b|(marked|is|was) fresh|fresh (note|knowledge)|verified (by|against)|repo-[ABC]|\bI read\b|confirmed (by|from)|\bcache|standing|did not rely|project memory|snapshot|this repo copy/i;
@@ -76,11 +77,15 @@ for (const packet of [1, 2]) {
     'Also set extra_error to true when an answer adds a detail that the question did not ask for and that is false.',
     ''
   ];
-  shuffle(sections, `sections-${packet}`).forEach((s, i) => {
+  let n = 0;
+  for (const s of shuffle(sections, `sections-${packet}`)) {
     const version = s.state === 's0' ? 1 : 2;
-    lines.push(`## Q${i + 1} (version ${version})`, '', `Question: ${s.q.q}`, '', `Reference answer: ${s.key}`, '');
+    if (!rows.some(r => r.qid === s.q.id && r.state === s.state)) continue;
+    n++;
+    lines.push(`## Q${n} (version ${version})`, '', `Question: ${s.q.q}`, '', `Reference answer: ${s.key}`, '');
     if (s.outdated) lines.push(`Outdated answer: ${s.outdated}`, '');
     const answers = shuffle(rows.filter(r => r.qid === s.q.id && r.state === s.state), `answers-${packet}-${s.q.id}-${s.state}`);
+    if (!answers.length) continue;
     for (const a of answers) {
       let label;
       do { label = crypto.randomBytes(2).toString('hex').toUpperCase(); } while (used.has(label));
@@ -89,7 +94,7 @@ for (const packet of [1, 2]) {
       lines.push(`- ${label}: ${a.clean}`);
     }
     lines.push('');
-  });
+  }
   fs.writeFileSync(path.join(OUT, `packet-${packet}.md`), lines.join('\n'));
   fs.writeFileSync(path.join(OUT, 'private', `map-${packet}.json`), JSON.stringify(map, null, 2));
   console.log(`packet ${packet}: ${Object.keys(map).length} answers, ~${Math.round(lines.join('\n').length / 4)} tokens`);
