@@ -1,0 +1,136 @@
+{
+  "about": "Final grade per question, state, and condition for experiment 3 (condition C3). Two graders worked blind from separate shuffles, with sentences that mentioned notes or the tree removed from the answers, and could check each version of the repository. They agreed on all 16 grades.",
+  "grades": [
+    {
+      "qid": "cli_docs",
+      "state": "s0",
+      "cond": "C3",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "cli_docs",
+      "state": "s1",
+      "cond": "C3",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "connect",
+      "state": "s0",
+      "cond": "C3",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "connect",
+      "state": "s1",
+      "cond": "C3",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "data_file",
+      "state": "s0",
+      "cond": "C3",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "data_file",
+      "state": "s1",
+      "cond": "C3",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "llm_docs",
+      "state": "s0",
+      "cond": "C3",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "llm_docs",
+      "state": "s1",
+      "cond": "C3",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "release",
+      "state": "s0",
+      "cond": "C3",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "release",
+      "state": "s1",
+      "cond": "C3",
+      "grade": "incorrect",
+      "grader1": "incorrect",
+      "grader2": "incorrect",
+      "reason": "Says npm publish is run by npm version's postversion step, but package.json has no postversion script; scripts/release.js line 99 runs npm publish itself."
+    },
+    {
+      "qid": "scoring",
+      "state": "s0",
+      "cond": "C3",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "scoring",
+      "state": "s1",
+      "cond": "C3",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "unsaved",
+      "state": "s0",
+      "cond": "C3",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct",
+      "extra_error": true,
+      "reason": "The list matches the reference, but it says connectDirectedLeaves saves via connectLeaves when it actually calls stem.addDirectedConnection and saveData itself."
+    },
+    {
+      "qid": "unsaved",
+      "state": "s1",
+      "cond": "C3",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "untested",
+      "state": "s0",
+      "cond": "C3",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "untested",
+      "state": "s1",
+      "cond": "C3",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    }
+  ]
+}

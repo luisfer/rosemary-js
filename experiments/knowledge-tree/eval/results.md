@@ -1,6 +1,6 @@
 # Results
 
-Run on 2026-09-26. Experiment 1 numbers come from `runs.jsonl`, `grades.json`, and `node analyze.js`. Experiment 2 numbers come from `runs2.jsonl`, `grades2.json`, and `node analyze2.js`. Experiment 3 (`runs3.jsonl`) is being graded; its section will follow.
+Run on 2026-09-26. Experiment 1 numbers come from `runs.jsonl`, `grades.json`, and `node analyze.js`. Experiments 2 and 3 numbers come from `runs2.jsonl`, `runs3.jsonl`, `grades2.json`, `grades3.json`, and `node analyze2.js`.
 
 Every answer run was one agent with an empty context, answering one question, on the same model. Experiments 1 and 2 used `grow.js` as of commit 947463c; experiment 3 used it as of commit a22c955.
 
@@ -10,6 +10,7 @@ Every answer run was one agent with an empty context, answering one question, on
 |---|---|---|
 | 1 | 22 lookups, each answered from one or two files | Reading the files was cheapest. No condition gave an outdated answer, because the agents checked notes against the files. |
 | 2 | 8 questions that need several files, in two states of the repository | The tree saved tokens only when the agent found and trusted the stored answer. The notes file gave one outdated answer after a change; the tree gave none. |
+| 3 (exploratory) | The same 8, with stored answers listed in the map and diffs for stale notes | The tree cost fewer tokens than reading the files on 15 of 16 question and state pairs, and fewer than the experiment 2 tree on all 16. No answer was outdated; one restated a stored answer incorrectly. |
 
 ## Experiment 1: lookups after the code changed
 
@@ -141,3 +142,75 @@ In s1, by what happened to the stored answer (tokens over A, mean):
 | 7. Over both states, C2 is cheaper than B2 | Held, not significant: -736 (interval -5,142 to +4,664) |
 
 By the rules written in advance, the tree did not show potential (prediction 1 failed), and freshness tracking did add something over plain notes (predictions 4 and 5 held).
+
+## Experiment 3: the fixes suggested by experiment 2 (exploratory)
+
+### Question
+
+Experiment 2 showed two problems: agents missed stored answers, and a stale note was re-derived from scratch. Do these fixes change the result?
+
+- `read` lists every stored answer first, one line each, with its status.
+- `expand` shows the status of each branch.
+- Each note keeps a snapshot of its sources, and `why` prints a diff of what changed since the note was written.
+
+This experiment was designed after seeing experiment 2's results, so it is exploratory. Its predictions were committed before its first run (`predictions3.md`).
+
+### Setup
+
+- Condition C3: the C2 prompt, with two sentences changed to say that `why` shows a diff (`prompts.md`), and `grow.js` from commit a22c955.
+- The same 8 questions and 2 states as experiment 2, one run each: 16 runs. C3 is compared with the A and C2 runs from experiment 2.
+- Two blind graders, as before. They agreed on all 16 grades.
+
+### Results
+
+| State | Condition | Tokens, mean | Over A, mean | Tool calls, mean | Runs that read no repository file | Correct | Partial | Stale | Incorrect |
+|---|---|---|---|---|---|---|---|---|---|
+| s0 | A: no notes | 64,157 | - | 5.6 | 0 | 7 | 1 | 0 | 0 |
+| s0 | C2: tree, experiment 2 | 59,964 | -4,193 | 5.8 | 5 | 7 | 1 | 0 | 0 |
+| s0 | C3: tree with the fixes | 54,603 | -9,554 | 2.1 | 8 | 8 | 0 | 0 | 0 |
+| s1 | A: no notes | 67,118 | - | 5.5 | 0 | 6 | 2 | 0 | 0 |
+| s1 | C2: tree, experiment 2 | 68,787 | +1,670 | 11.3 | 2 | 8 | 0 | 0 | 0 |
+| s1 | C3: tree with the fixes | 60,199 | -6,919 | 5.8 | 3 | 7 | 0 | 0 | 1 |
+
+Paired differences on the same question and state, with 95% bootstrap intervals:
+
+| Comparison | Cheaper in | Mean difference |
+|---|---|---|
+| C3 vs A, s0 | 8 of 8 | -9,554 (-15,523 to -4,387) |
+| C3 vs A, s1 | 7 of 8 | -6,919 (-13,877 to -1,347) |
+| C3 vs A, both states | 15 of 16 | -8,236 (-12,719 to -4,176) |
+| C3 vs C2, both states | 16 of 16 | -6,975 (-9,129 to -5,349) |
+
+About 52,600 tokens of every run are fixed (system prompt and tool definitions). Above that, A used about 11,600 tokens per question in s0 and C3 about 2,000; in s1, about 14,500 and 7,600.
+
+### Findings
+
+1. With the stored answers listed in the map, the agent used them. In s0, C3 answered all 8 questions from the tree, in 2 or 3 tool calls, without reading a repository file.
+2. The agent trusted fresh answers and checked stale ones. In s1, C3 answered the 3 fresh questions from the tree and read files for all 5 stale ones.
+3. The diffs made checking cheaper than re-deriving, although the agents still read the changed files. On the 5 stale questions, C3 used 6,200 to 20,400 fewer tokens than C2. In the data-file answer, the agent named both changes, said that neither touches data-file path resolution, and then confirmed that against the files.
+4. C3 gave no outdated answer, but it gave the only incorrect answer across experiments 2 and 3. Asked for the release steps, the agent answered from the fresh stored answer and said that `npm version` runs `npm publish`; the stored answer, like the script, has `release.js` run it. In another run, a correct answer added a false detail while restating a stored answer. Answering from a note leaves no file to check the restatement against.
+5. Predictions (`predictions3.md`):
+
+| Prediction | Result |
+|---|---|
+| 1. In s0, C3 answers 7 of 8 questions without reading a repository file | Held: 8 of 8 |
+| 2. In s0, C3 is cheaper than A on 6 of 8 questions | Held: 8 of 8 |
+| 3. In s1, C3 gives no outdated answer to the 3 changed questions | Held |
+| 4. In s1, C3 is cheaper than C2 on 4 of the 5 stale questions | Held: 5 of 5 |
+| 5. Over both states, C3 is cheaper than A on average | Held: -8,236 |
+
+## What the three experiments show
+
+- A saved answer pays off when three things hold: the question is expensive to answer from the files, the answer is still valid, and the agent finds it. Experiment 1 failed the first; experiment 2 often failed the third.
+- Agents used the freshness status the way it is meant to be used. They answered from fresh notes and re-checked stale ones, in every run of experiment 3.
+- Without freshness information, a stored answer can be repeated after it stops being true. It happened once in experiment 2, when the change was a small addition to a large file.
+- A diff of what changed since a note was written is what makes a stale note cheap to re-check.
+- Answering from a note moves the risk from outdated facts to restatement errors. One of 16 answers restated a correct note incorrectly.
+
+## Limits
+
+- One run per cell, one model, one small repository (about 55,000 tokens). Differences under a few thousand tokens on a single question are within run-to-run variation.
+- The stored answers were written with care, after reading the files, by the agent that set up the experiment. The tree tracks whether an answer's inputs changed, not whether the answer was right to begin with.
+- Freshness is only as good as the declared sources. A note that omits a file it depends on stays fresh when that file changes.
+- Experiment 3 was designed after seeing experiment 2 and compared against earlier runs. It needs a replication with several runs per cell, planned in advance.
+- Nothing here measures the cost of writing the notes. In real use an agent writes a note once, the first time it answers a question.

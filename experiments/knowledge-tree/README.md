@@ -67,4 +67,4 @@ The tree is stored in `<repo>/.rosemary/tree.json`, and the source snapshots in 
 - Freshness is not correctness. A wrong note stays wrong until its inputs change or someone reviews it.
 - Source hashes are recomputed on every command. A real implementation would cache them by size and modification time.
 - Snapshots copy every source file. In a git repository, a real implementation would record the commit and read old versions from git.
-- `eval/` compares agents with the tree, with the same notes as one file, and with no notes. In the first experiment, reading the files directly was cheapest and every condition answered correctly. See `eval/results.md`.
+- `eval/` compares agents with the tree, with the same notes as one file, and with no notes, in three experiments. For lookups that one or two files answer, reading the files was cheapest. For questions that need several files, the tree with its current commands used fewer tokens than reading the files on 15 of 16 question and state pairs and gave no outdated answer; the notes file gave one. Experiment 3 is exploratory, with one run per cell. See `eval/results.md`.
