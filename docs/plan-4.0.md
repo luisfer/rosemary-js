@@ -51,6 +51,7 @@ Verified on 2026-09-26 with Node 22.22.2 and npm 10.9.7. Reproduction steps are 
 | R2 | `main` contains `chore(release): 2.1.0` (`a0e6c6c`) with no `v2.1.0` tag and no `2.1.0` on npm. 32 minutes later the `3.0.0` release commit renamed the CHANGELOG heading from `2.1.0` to `3.0.0`. The version was changed after the release run had started. | `git log`, `git ls-remote --tags`, `npm view` | 3.1.0 (process) |
 | R3 | `3.0.0` was a major bump without a breaking change. | CHANGELOG `3.0.0` | Policy |
 | R4 | `SECURITY.md` lists 2.x as the supported line. `CONTRIBUTING.md` asks for an `## Unreleased` CHANGELOG section that does not exist. The eval and a tarball check do not run in CI. | Files as listed | 3.1.0 |
+| R5 | `npm test` writes fixtures into the repository root (`tmp_cli/`, `tmp_roundtrip/`). `.gitignore` covers only `tmp_cli/`, so every test run leaves an untracked `tmp_roundtrip/data.json`. | `src/_tests_/Rosemary.test.js:220` | 3.1.0 |
 | V1 | CLI output uses emoji and promotional text (`rosemary hello` prints "You are amazing, and you matter!"). The voice contract in `AGENTS.md` excludes both. | `src/cli.js` | 4.0.0 |
 
 S1, A1, A6, P1, and R1 matter most. S1 loses data. A1 blocks the MCP direction. A6 is a shipped default that no longer works. P1 is a documentation claim that is false. R1 can reproduce the git/npm desync the release scripts were written to prevent.
@@ -303,6 +304,7 @@ Packaging and docs:
 - `files` drops `assets/`, `scripts/`, `examples/`, and `evals/`. The README logo uses an absolute URL. Tarball: 4.3 MB to about 44 KB. (P3)
 - Correct the Express claim in `docs/non-goals.md`. Document `npm install --omit=optional rosemary-js` for 3.x users who do not need the HTTP API. (P1)
 - Update `SECURITY.md`, add `## [Unreleased]` to `CHANGELOG.md`, and add Node 24, the eval, and a tarball check to CI. (R4)
+- Tests write their fixtures under `os.tmpdir()` instead of the repository root. (R5)
 - Release tooling as described in section 5. (R1, R2)
 
 Tests: every item gets a regression test. The storage items get fault-injection tests: truncated file, temporary file left behind by a crash, and a file changed by another process between load and save.
