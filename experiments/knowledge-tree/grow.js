@@ -64,6 +64,18 @@ class Tree {
     return node;
   }
 
+  // Accepts an id, a note title (such as `src/Rosemary.js`), or a path without its prefix.
+  resolve(ref) {
+    if (this.data.nodes[ref]) return ref;
+    const ids = Object.keys(this.data.nodes);
+    const byTitle = ids.filter(id => this.data.nodes[id].title === ref);
+    if (byTitle.length === 1) return byTitle[0];
+    const bare = ref.replace(/\/$/, '');
+    const byPath = ids.filter(id => id === `file:${bare}` || id === `dir:${bare}`);
+    if (byPath.length === 1) return byPath[0];
+    throw new Error(`no note ${ref}`);
+  }
+
   // Record a note and the current hashes of everything it was derived from.
   write(id, spec) {
     const prev = this.data.nodes[id];
@@ -302,8 +314,8 @@ if (require.main === module) {
     const text = tree.read(Number(opt('budget', 800)));
     print(`${text}\n(~${tokens(text)} tokens)`);
   }
-  else if (cmd === 'expand') print(tree.expand(arg));
-  else if (cmd === 'why') print(tree.why(arg));
+  else if (cmd === 'expand') print(tree.expand(tree.resolve(arg)));
+  else if (cmd === 'why') print(tree.why(tree.resolve(arg)));
   else if (cmd === 'confirm') print(JSON.stringify(tree.confirm(arg, opt('by', 'agent'))));
   else if (cmd === 'write') print(JSON.stringify(tree.write(arg, JSON.parse(fs.readFileSync(opt('spec'), 'utf8')))));
   else if (cmd === 'sizes') print(JSON.stringify(tree.sizes(), null, 2));

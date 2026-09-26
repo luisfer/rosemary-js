@@ -1,0 +1,779 @@
+{
+  "about": "Final grade per question and condition. Two graders worked blind from separate shuffles, with sentences that mentioned notes or the tree removed from the answers. They could check the reference answers against the changed repository.",
+  "grades": [
+    {
+      "qid": "api_port",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "api_port",
+      "cond": "B",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "api_port",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "api_port",
+      "cond": "C",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "api_port",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "builder_serve",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "builder_serve",
+      "cond": "B",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "builder_serve",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "builder_serve",
+      "cond": "C",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "builder_serve",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "check_release",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "check_release",
+      "cond": "B",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "check_release",
+      "cond": "B2",
+      "grade": "partial",
+      "grader1": "partial",
+      "grader2": "partial",
+      "reason": "Leaves out the package.json name/version check; the other five checks are right."
+    },
+    {
+      "qid": "check_release",
+      "cond": "C",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "check_release",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "cli_data_file",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "cli_data_file",
+      "cond": "B",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "cli_data_file",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "cli_data_file",
+      "cond": "C",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "cli_data_file",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "default_embedding",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "default_embedding",
+      "cond": "B",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "default_embedding",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "default_embedding",
+      "cond": "C",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "default_embedding",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "eval_tasks",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "eval_tasks",
+      "cond": "B",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "eval_tasks",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "eval_tasks",
+      "cond": "C",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "eval_tasks",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "fuzzy_threshold",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "fuzzy_threshold",
+      "cond": "B",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "fuzzy_threshold",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "fuzzy_threshold",
+      "cond": "C",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "fuzzy_threshold",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "invalid_json",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "partial",
+      "reason": "Immediate behavior is right (no throw, logs, resets), but it omits that a later autosave overwrites the file.",
+      "note": "Graders split (correct, partial). Ruled correct: the answer covers what loadData does; the missing point is a later consequence."
+    },
+    {
+      "qid": "invalid_json",
+      "cond": "B",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "invalid_json",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "invalid_json",
+      "cond": "C",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "invalid_json",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "max_tokens",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "max_tokens",
+      "cond": "B",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "max_tokens",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "max_tokens",
+      "cond": "C",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "max_tokens",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "node_version",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "node_version",
+      "cond": "B",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "node_version",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "node_version",
+      "cond": "C",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "node_version",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "optional_deps",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "optional_deps",
+      "cond": "B",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "optional_deps",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "optional_deps",
+      "cond": "C",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "optional_deps",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "release_order",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "release_order",
+      "cond": "B",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "release_order",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "release_order",
+      "cond": "C",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "release_order",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "remove_connection",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "remove_connection",
+      "cond": "B",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "remove_connection",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "remove_connection",
+      "cond": "C",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "remove_connection",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "save_autosave_false",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "save_autosave_false",
+      "cond": "B",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "save_autosave_false",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "save_autosave_false",
+      "cond": "C",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "save_autosave_false",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "security_supported",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "security_supported",
+      "cond": "B",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "security_supported",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "security_supported",
+      "cond": "C",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "security_supported",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "self_connect",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "self_connect",
+      "cond": "B",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "self_connect",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "self_connect",
+      "cond": "C",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "self_connect",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "stats_command",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "stats_command",
+      "cond": "B",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "stats_command",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "stats_command",
+      "cond": "C",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "stats_command",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "stem_tojson",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "stem_tojson",
+      "cond": "B",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "stem_tojson",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "stem_tojson",
+      "cond": "C",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "stem_tojson",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "test_files",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "test_files",
+      "cond": "B",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "test_files",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "test_files",
+      "cond": "C",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "test_files",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "transitive_types",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "transitive_types",
+      "cond": "B",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "transitive_types",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "transitive_types",
+      "cond": "C",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "transitive_types",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "visualize_output",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "visualize_output",
+      "cond": "B",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "visualize_output",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "visualize_output",
+      "cond": "C",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "visualize_output",
+      "cond": "C2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "walk_tag_affinity",
+      "cond": "A",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "walk_tag_affinity",
+      "cond": "B",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "walk_tag_affinity",
+      "cond": "B2",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "walk_tag_affinity",
+      "cond": "C",
+      "grade": "correct",
+      "grader1": "correct",
+      "grader2": "correct"
+    },
+    {
+      "qid": "walk_tag_affinity",
+      "cond": "C2",
+      "grade": "partial",
+      "grader1": "partial",
+      "grader2": "partial",
+      "reason": "Says 'then degree' but not that the higher degree wins the tie."
+    }
+  ]
+}

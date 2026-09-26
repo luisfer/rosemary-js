@@ -65,4 +65,4 @@ The tree is stored in `<repo>/.rosemary/tree.json`.
 - Hashes are per file, so any edit to a file flags its note. `confirm` is the cheap answer when the edit does not matter.
 - Freshness is not correctness. A wrong note stays wrong until its inputs change or someone reviews it.
 - Source hashes are recomputed on every command. A real implementation would cache them by size and modification time.
-- Nothing here measures whether agents complete tasks better with the tree. That needs a with-and-without experiment.
+- `eval/` compares agents with the tree, with the same notes as one file, and with no notes. In the first experiment, reading the files directly was cheapest and every condition answered correctly. See `eval/results.md`.

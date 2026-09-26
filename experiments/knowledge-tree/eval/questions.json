@@ -1,0 +1,167 @@
+{
+  "about": "Questions about the repository after the changes in setup.js. 'drift' questions have answers that the changes altered; 'stale' is the answer that was true before the changes. 'cNote' says whether the knowledge-tree note covering the answer is fresh or flagged stale in condition C.",
+  "questions": [
+    {
+      "id": "release_order",
+      "drift": true,
+      "cNote": "stale",
+      "q": "When the release script (scripts/release.js) runs without --dry-run, which checks happen before the version is bumped and tagged? List them in order.",
+      "key": "1) working tree is clean, 2) branch is main (unless --force-branch), 3) CHANGELOG.md has entries under '## [Unreleased]', 4) npm test passes. Only then npm version bumps and tags.",
+      "stale": "Clean tree, main branch, npm test, then bump and tag; the CHANGELOG is only checked later, at publish time (prepublishOnly / check-release.js)."
+    },
+    {
+      "id": "remove_connection",
+      "drift": true,
+      "cNote": "stale",
+      "q": "Is there a method that removes the connection between two specific leaves without deleting either leaf? If so, name it and the class it belongs to.",
+      "key": "Yes: removeConnection(leafId1, leafId2) on the Stem class (for example brain.stem.removeConnection(a, b)). It removes the pair in both directions.",
+      "stale": "No such method; only removeLeafConnections (all connections of one leaf) or deleting a leaf."
+    },
+    {
+      "id": "test_files",
+      "drift": true,
+      "cNote": "stale",
+      "q": "How many Jest test files (*.test.js) does the repository contain, and in which directories are they?",
+      "key": "8 test files: 7 in src/_tests_/ and 1 in test/integration/ (roundtrip.test.js).",
+      "stale": "7 test files, all in src/_tests_/."
+    },
+    {
+      "id": "max_tokens",
+      "drift": true,
+      "cNote": "stale",
+      "q": "What max_tokens value does ClaudeProvider send when the caller does not configure one?",
+      "key": "4096.",
+      "stale": "1024."
+    },
+    {
+      "id": "fuzzy_threshold",
+      "drift": true,
+      "cNote": "stale",
+      "q": "What default Fuse.js threshold does Rosemary#fuzzySearch use when no options are passed?",
+      "key": "0.3.",
+      "stale": "0.4."
+    },
+    {
+      "id": "transitive_types",
+      "drift": true,
+      "cNote": "stale",
+      "q": "Which relationship types does Rosemary#infer treat as transitive?",
+      "key": "implies, prerequisite-of, subset-of, aka, and supersedes (five types).",
+      "stale": "implies, prerequisite-of, subset-of, and aka (four types, without supersedes)."
+    },
+    {
+      "id": "node_version",
+      "drift": true,
+      "cNote": "stale",
+      "q": "What minimum Node.js version does the package declare in package.json?",
+      "key": "Node 22 or later (engines.node '>=22').",
+      "stale": "Node 20 or later ('>=20')."
+    },
+    {
+      "id": "stats_command",
+      "drift": true,
+      "cNote": "stale",
+      "q": "Does the rosemary CLI have a command that prints the number of leaves, tags, and connections? If so, what is it called?",
+      "key": "Yes: 'rosemary stats' (it calls logDataSummary).",
+      "stale": "No; there is no such command (report lists leaves one by one)."
+    },
+    {
+      "id": "invalid_json",
+      "drift": false,
+      "cNote": "stale",
+      "q": "What happens when Rosemary#loadData reads a data file that exists but contains invalid JSON?",
+      "key": "No exception: importData catches the parse error, logs it ('Error importing data'), and resets leaves, connections (stem), and tags to empty. A later autosave would overwrite the file."
+    },
+    {
+      "id": "save_autosave_false",
+      "drift": false,
+      "cNote": "stale",
+      "q": "What does Rosemary#saveData() do when the instance was created with autoSave: false?",
+      "key": "It returns immediately and writes nothing."
+    },
+    {
+      "id": "walk_tag_affinity",
+      "drift": false,
+      "cNote": "stale",
+      "q": "In Rosemary#walk with mode 'tag-affinity', how is the next leaf chosen?",
+      "key": "Among connected leaves not yet visited, it picks the one sharing the most tags with the current leaf; ties go to the higher connection count (degree), then to the smaller leaf id in alphabetical order."
+    },
+    {
+      "id": "api_port",
+      "drift": false,
+      "cNote": "fresh",
+      "q": "On which port does the REST API server (src/api.js) listen by default, and which environment variable changes it?",
+      "key": "Port 3000; the PORT environment variable."
+    },
+    {
+      "id": "default_embedding",
+      "drift": false,
+      "cNote": "fresh",
+      "q": "How does RosemaryLLM's default generateEmbedding work when no embedder is configured? Give the vector size and the method.",
+      "key": "A 64-dimensional vector: each character of the lowercased text is combined with the next two characters, hashed into one of 64 buckets, and counted; the vector is then L2-normalized."
+    },
+    {
+      "id": "stem_tojson",
+      "drift": false,
+      "cNote": "stale",
+      "q": "In what shape does Stem#toJSON serialize edges, and when is an edge marked as directed?",
+      "key": "An array of {from, to, type, directed} records. A pair whose two directions carry the same type is written once with directed: false; otherwise directed: true."
+    },
+    {
+      "id": "check_release",
+      "drift": false,
+      "cNote": "fresh",
+      "q": "What does scripts/check-release.js verify before a publish? List the checks.",
+      "key": "package.json has a name and version; the working tree is clean; tag v<version> exists and points at HEAD; the tag exists on origin; the version is not already on npm; CHANGELOG.md mentions the version. (The branch is printed, not enforced.)"
+    },
+    {
+      "id": "cli_data_file",
+      "drift": false,
+      "cNote": "stale",
+      "q": "Which command-line flag and which environment variable select the data file for the rosemary CLI?",
+      "key": "-d / --data-file <path>, and ROSEMARY_DATA_FILE."
+    },
+    {
+      "id": "self_connect",
+      "drift": false,
+      "cNote": "stale",
+      "q": "What does Rosemary#connectLeaves do when both ids are the same leaf?",
+      "key": "It logs a warning ('Cannot connect a leaf to itself.') and returns without connecting; it does not throw."
+    },
+    {
+      "id": "optional_deps",
+      "drift": false,
+      "cNote": "stale",
+      "q": "Which packages does package.json list under optionalDependencies?",
+      "key": "express, body-parser, swagger-jsdoc, swagger-ui-express, and http-server."
+    },
+    {
+      "id": "builder_serve",
+      "drift": false,
+      "cNote": "fresh",
+      "q": "When Builder#build is called with { serve: true }, how is the page served, and on which host and port?",
+      "key": "It requires the http-server package and serves the output file's directory on 127.0.0.1 (localhost), port 8080."
+    },
+    {
+      "id": "visualize_output",
+      "drift": false,
+      "cNote": "fresh",
+      "q": "What does scripts/visualize.js produce, and where does it write it by default?",
+      "key": "An HTML page with a vis.js network of the data file (ROSEMARY_DATA_FILE, default ./rosemary-data.json); it writes to the path given as the first argument, default rosemary-network.html in the current directory."
+    },
+    {
+      "id": "eval_tasks",
+      "drift": false,
+      "cNote": "fresh",
+      "q": "What does scripts/evaluate-agent-context.js test, and how many tasks does its default suite contain?",
+      "key": "Four tasks from evals/agent-context.json: resolving an alias, inferring a transitive prerequisite chain, bridging a path, and building a token-budgeted context pack. It exits with code 1 if any task fails."
+    },
+    {
+      "id": "security_supported",
+      "drift": false,
+      "cNote": "fresh",
+      "q": "According to SECURITY.md, which version line is supported (active)?",
+      "key": "2.x is listed as active; 1.x is end of life."
+    }
+  ]
+}
