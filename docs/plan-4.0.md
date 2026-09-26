@@ -36,7 +36,7 @@ Verified on 2026-09-26 with Node 22.22.2 and npm 10.9.7. Reproduction steps are 
 | G2 | A directed edge is invisible from its target. With `Algebra -prerequisite-of-> Calculus`, `getRelatedLeaves(Calculus)` is empty and `bridge(Calculus, Algebra)` is `null`. | Probe 10 | 4.0.0 |
 | G3 | `getTotalConnections()` halves every edge: 3 directed edges report `1.5`. | Probe 5 | 3.1.0 |
 | G4 | `connectSimilarLeaves` stores free-text relationship names such as `Common tags: t1, t2`. | Probe 10 | 4.0.0 |
-| A1 | Library code prints to stdout: 6 lines for one `loadData` and two `addLeaf` calls. The MCP stdio transport reserves stdout for protocol messages, so `examples/mcp/` cannot become a server until the core is silent. | Probe 3 | 3.1.0 (option), 4.0.0 (default) |
+| A1 | Library code prints to stdout: 6 lines for one `loadData` and two `addLeaf` calls. The MCP specification says a stdio server "MUST NOT write anything to its `stdout` that is not a valid MCP message", so `examples/mcp/` cannot become a server until the core is silent. | Probe 3 | 3.1.0 (option), 4.0.0 (default) |
 | A2 | A new store is seeded with "Welcome to Rosemary.js! This is your first leaf." An agent's first recall returns it. | Probe 3 | 4.0.0 |
 | A3 | Embeddings live only in memory, so a hosted embedder re-embeds every leaf on each process start. `cosineSimilarity` compares vectors of different lengths by truncating to the shorter one instead of failing. | Probe 8; `src/llm/RosemaryLLM.js` | 4.0.0, 4.1.0 |
 | A4 | `Rosemary#resolve` is synchronous and `RosemaryLLM#resolve` returns a Promise. `llm.d.ts` types it as `Promise<unknown>`. | Probe 7 | 4.0.0 |
@@ -47,7 +47,7 @@ Verified on 2026-09-26 with Node 22.22.2 and npm 10.9.7. Reproduction steps are 
 | P2 | With `--omit=optional` the install is still 121 packages (43 MB). `inquirer` pulls `rxjs` and `lodash`; `getLeafContentAsHTML` pulls `jsdom`. | Same | 4.0.0 |
 | P3 | The tarball is 4.3 MB; 4.27 MB of it is three logo PNGs. `scripts/`, `examples/`, and `evals/` also ship, although the `exports` map makes them unreachable. Without those four directories: 43.8 KB packed, 31 files. | `npm pack --dry-run` | 3.1.0 |
 | P4 | `engines.node` is `>=20` and CI tests Node 20 and 22. Node 20 reached end of life on 2026-04-30. | Node release schedule | 4.0.0 |
-| R1 | `release.js` runs `npm version` and `git push --follow-tags` before `npm publish`. The CHANGELOG and registry checks run only inside `prepublishOnly`, after the tag is public. The CHANGELOG check is a substring match, so `4.0.0` passes on a file that only mentions `4.0.0-rc.1`. Prereleases get no dist-tag handling. | `scripts/release.js`, `scripts/check-release.js` | 3.1.0 |
+| R1 | `release.js` runs `npm version` and `git push --follow-tags` before `npm publish`. The CHANGELOG and registry checks run only inside `prepublishOnly`, after the tag is public. The CHANGELOG check is a substring match, so `4.0.0` passes on a file that only mentions `4.0.0-rc.1`. Prereleases get no dist-tag handling: npm 10, which ships with Node 22, would publish a release candidate as `latest`, and npm 11 or later refuses to publish it without `--tag`. | `scripts/release.js`, `scripts/check-release.js` | 3.1.0 |
 | R2 | `main` contains `chore(release): 2.1.0` (`a0e6c6c`) with no `v2.1.0` tag and no `2.1.0` on npm. 32 minutes later the `3.0.0` release commit renamed the CHANGELOG heading from `2.1.0` to `3.0.0`. The version was changed after the release run had started. | `git log`, `git ls-remote --tags`, `npm view` | 3.1.0 (process) |
 | R3 | `3.0.0` was a major bump without a breaking change. | CHANGELOG `3.0.0` | Policy |
 | R4 | `SECURITY.md` lists 2.x as the supported line. `CONTRIBUTING.md` asks for an `## Unreleased` CHANGELOG section that does not exist. The eval and a tarball check do not run in CI. | Files as listed | 3.1.0 |
@@ -82,6 +82,7 @@ The "branching" idea applied to retrieval. Recall returns an outline inside a to
 - Fit: high. `buildPromptContext` already walks and prunes.
 - Limit: it presents whatever the store holds, stale claims included. On its own it is a formatting layer that other stores can copy.
 - Measured: on the sample in probe 11 the outline uses about half the tokens of the concise JSON pack.
+- Support: Anthropic's context-engineering guidance recommends keeping lightweight identifiers and loading details just in time, which is what expand handles do. Chroma's context-rot study reports that focused prompts beat full-length ones on LongMemEval for every model tested, so a smaller pack is about accuracy as well as cost.
 
 ### 3. MCP-first project memory
 
@@ -127,27 +128,32 @@ JSON Schema for the data file, lossless CSV for nodes and edges, graphology expo
 
 ### Prior art
 
+Checked on 2026-09-26. Sources are listed in the appendix.
+
 | Tool | What it is | Relevant to |
 |---|---|---|
-| Reference MCP memory server (`@modelcontextprotocol/server-memory`) | Entities with observations, plus relations, stored in a local JSONL file. `read_graph` returns the whole graph. No validity windows or sources. | 1, 3, 7 |
-| Graphiti (Zep) | Temporal knowledge graph in Python on a graph database. Facts carry validity intervals and are invalidated rather than deleted. | 1 |
-| mem0 | Memory layer that asks an LLM whether to add, update, or delete a memory. Vector store, optional graph store; Python and TypeScript SDKs; hosted and open-source editions. | 1, 8 |
-| Letta (formerly MemGPT) | Agent server with editable memory blocks in the context window and an archival store. | 1 |
-| Basic Memory | Markdown files indexed in SQLite and served over MCP; Python. | 5 |
-| Cognee | Python pipelines that build a knowledge graph and vector index from documents. | 8 |
-| A-MEM (research, 2025) | Zettelkasten-style agent memory: notes with keywords and context, linked to related notes; new notes can revise older ones. | 1, 4 |
-| HippoRAG and HippoRAG 2 (research) | Extract a graph from passages, then retrieve with personalized PageRank from the query's entities. Better multi-hop recall than flat retrieval in the papers' benchmarks. | 2, 4 |
-| Microsoft GraphRAG | LLM-extracted entity graph, community detection, and community summaries for questions about a whole corpus. | 2, 8 |
-| Anthropic memory tool | The model reads and writes files in a memory directory that the application stores. | 1, 2 |
-| beads | Git-committed issue graph for coding agents, with dependency edges and a query for unblocked work. | 6 |
+| Reference MCP memory server (`@modelcontextprotocol/server-memory`) | Entities with string observations, plus directed relations, in a JSONL file. No ids, timestamps, or sources. Every change rewrites the whole file. In the published build, one malformed line fails the whole load, and the default file sits inside the package directory (the npx cache when started through npx). | 1, 3, 7 |
+| Graphiti (Zep) | Python temporal knowledge graph on Neo4j, FalkorDB, or Neptune. Facts carry validity windows and are invalidated rather than deleted; every fact traces back to its raw input. Ships an MCP server. | 1 |
+| mem0 | Python and TypeScript memory layer. The open-source v3 combines a vector store, BM25, and entity matching; graph memory is now in the hosted platform only. Retrieval is sized by `top_k`, not by a token budget. | 1, 8 |
+| Letta Code (formerly Letta, MemGPT) | TypeScript agent with editable memory blocks; its memory files are tracked in git. The Python server is retired. | 1 |
+| Basic Memory | Python, AGPL-3.0. Markdown files are the source of truth, indexed in SQLite and served over MCP. No temporal model. | 5 |
+| Cognee | Python pipelines that build a graph and vector index from documents, with `remember` and `recall` and event timelines. | 8 |
+| A-MEM (NeurIPS 2025) | Research code: Zettelkasten-style notes with keywords, context, and links; a new note can revise related notes. | 1, 4 |
+| HippoRAG and HippoRAG 2 | Research frameworks: extract triples into a graph, then retrieve with personalized PageRank from the query's entities. | 2, 4 |
+| Microsoft GraphRAG | LLM-extracted entity graph, communities, and community summaries, with a token limit on context. In maintenance mode. | 2, 8 |
+| Anthropic memory tool | The model reads and writes files under `/memories`, stored by the application. No graph, validity, or sources. | 1, 2 |
+| beads | Issue graph for coding agents with dependency edges and a queue of unblocked work. Its source of truth moved from a JSONL file to Dolt, a versioned SQL database; the JSONL file is now an export. | 6 |
+| LongMemory (formerly OpenMemory) | TypeScript, Apache-2.0, on SQLite or Postgres. The published code stores temporal facts with `valid_from`, `valid_to`, and `confidence`; MCP over stdio and HTTP. Large dependency tree (AWS SDK, googleapis, pg, sqlite3, ioredis). | 1 |
+| mcp-memory-graph | Node, one SQLite file with native modules and a local embedding model. Validity and transaction time with `as_of` queries, signed provenance, a token-budgeted query tool, personalized PageRank. PolyForm Noncommercial license. | 1, 2 |
+| GraphZep, memento-mcp | TypeScript temporal graphs that need Neo4j or a similar server. | 1 |
 
-Among these, none combines a single reviewable file, typed supersession and contradiction edges, and budgeted outline recall in a Node library with no services. Each piece exists somewhere; the combination is the opening for direction 1.
+Time-aware memory with provenance already exists in TypeScript (LongMemory, mcp-memory-graph), so direction 1 is not new on its own. None of the tools above offers all of the following together: a permissive license, no services and no native modules, a plain file that git can diff and merge, and typed edges with defined meaning. That combination is the opening, and it puts the weight on the storage format rather than on the temporal model. Several projects are moving toward versioned, file-backed memory (Letta Code in git, Basic Memory on Markdown, beads on Dolt). beads moved its source of truth off a plain file, which is a reminder that a file has limits on scale and concurrent writes; rosemary should state its limits instead of stretching past them.
 
 ### Comparison
 
 | Direction | Agent value | Distinct | Fit | Cost | Measurable |
 |---|---|---|---|---|---|
-| 1. Memory graph with sources and time | High | High | High | Medium | High |
+| 1. Memory graph with sources and time | High | Medium | High | Medium | High |
 | 2. Context compiler | High | Medium | High | Low | High |
 | 3. MCP-first project memory | Medium | Low | High | Low | Medium |
 | 4. Associative discovery | Low | Medium | Medium | Medium | Low |
@@ -161,6 +167,8 @@ Among these, none combines a single reviewable file, typed supersession and cont
 Direction 1, with direction 2 as its read path, directions 3 and 7 as delivery, and parts of 4 and 5 as later checks and exports.
 
 Direction 2 is closest to the original mindmap idea and is kept in full. It is not the lead because it cannot tell a current claim from a superseded one: a shorter pack of stale facts is still stale. Direction 1 supplies that distinction, and it changes the data model, which is hard to retrofit later. The outline format is cheap to add on top of it.
+
+The temporal model is not what sets direction 1 apart; other TypeScript stores have one (see Prior art). The storage is: a plain file with no services and no native modules, under a permissive license.
 
 ## 3. Recommended direction: a memory graph with sources and time
 
@@ -305,7 +313,7 @@ Size: M.
 
 Breaking changes to the environment and to behavior. Every v1.x `Rosemary` method keeps its signature.
 
-- Node 22 or later. CI on 22 and 24, plus 26 once it is LTS. (P4)
+- Node 22 or later. CI on 22, 24, and 26 (26 becomes LTS on 2026-10-28). Node 22 reaches end of life on 2027-04-30; dropping it is a 5.0.0 change. From Node 27 on, Node ships one major version a year and every one becomes LTS. (P4)
 - Production dependencies: `fuse.js` only. The CLI uses `util.parseArgs`, `util.styleText`, and `readline/promises`. CSV reading and writing move to an internal RFC 4180 module with tests for quoting, embedded delimiters and newlines, CRLF, and a byte-order mark. `marked`, `dompurify`, and `jsdom` (for `getLeafContentAsHTML`) and `express`, `swagger-jsdoc`, and `swagger-ui-express` (for `rosemary-js/api`) become optional peer dependencies, loaded on first use with an install hint when missing. `node:http` replaces `http-server` for `Builder#build(path, { serve: true })`. (P1, P2)
 - The library does not print. The default `logger` is silent. (A1)
 - A new store starts empty. (A2)
@@ -349,7 +357,9 @@ Size: M.
 
 - Repository `luisfer/rosemary-mcp`, npm name `rosemary-mcp` (unclaimed on 2026-09-26). The core keeps zero MCP dependencies, as `docs/non-goals.md` requires.
 - Tools mirror the memory API: `remember`, `recall`, `expand`, `supersede`, `retract`, `forget`, `conflicts`, `audit`.
-- stdio transport. `--data-file` and `--read-only` flags. The server reloads the store when the file changes on disk, so the CLI and the server can share it.
+- Built on the v2 TypeScript SDK (`@modelcontextprotocol/server`). It serves clients of both the 2025-11-25 and the current 2026-07-28 protocol revisions, loads with `require()`, and installs 3 packages; the v1 SDK (`@modelcontextprotocol/sdk`) installs 94.
+- stdio transport. `--data-file` and `--read-only` flags. The default data file is in the project directory, never inside the package directory. The server reloads the store when the file changes on disk, so the CLI and the server can share it.
+- The first version of a new npm package cannot be published through trusted publishing, so `0.1.0` is published once by hand with two-factor authentication.
 - `0.1.0` against `4.1.0-rc.1`. `1.0.0` after `4.1.0`, gated on tool-level evals.
 
 Size: M.
@@ -399,7 +409,7 @@ The release pull request shows the version and its CHANGELOG section in one diff
 2. Verify the heading `## [<version>]` in `CHANGELOG.md`, matched exactly rather than by substring. Run the tests and evals.
 3. Smoke test the package before it is public: `npm pack`, install the tarball into an empty directory, `require` every entry in the `exports` map, and run the CLI's help command.
 4. Create and push the annotated tag `v<version>` on the merge commit if it does not exist. If it exists, it must point at this commit.
-5. If the version is not on npm: `npm publish --provenance --access public`, adding `--tag next` when the version has a prerelease part. Authentication uses npm trusted publishing (OIDC), so there is no `NPM_TOKEN` secret. Trusted publishing needs npm CLI 11.5.1 or later and `id-token: write` in the job permissions.
+5. If the version is not on npm: `npm publish --access public`, adding `--tag next` when the version has a prerelease part. Authentication uses npm trusted publishing (OIDC), so there is no `NPM_TOKEN` secret, and npm attaches provenance automatically. Trusted publishing needs npm 11.5.1 or later on Node 22.14 or later, a GitHub-hosted runner, and `id-token: write` in the job permissions. Node 22 ships npm 10, so the job runs on Node 24 or upgrades npm first.
 6. Create the GitHub Release if it is missing, with the CHANGELOG section as its body. Generated notes do not follow the voice contract; the CHANGELOG does.
 
 If a step fails, fix the cause and re-run the workflow. Steps whose result already exists are skipped.
@@ -414,7 +424,7 @@ If a step fails, fix the cause and re-run the workflow. Steps whose result alrea
 
 ### Repository settings (manual, by the maintainer)
 
-- On npmjs.com: add the trusted publisher for `rosemary-js` (repository `luisfer/rosemary-js`, workflow `release.yml`), then set publishing access to require two-factor authentication and disallow tokens.
+- On npmjs.com: add the trusted publisher for `rosemary-js` (repository `luisfer/rosemary-js`, workflow file `release.yml`). Publisher configurations created after 2026-09-03 allow only staged publishing by default. Either also allow `npm publish`, or keep staging and approve each release with `npm stage approve` and two-factor authentication, which adds a human check on the exact tarball CI built. Then set publishing access to require two-factor authentication and disallow tokens; publishing through OIDC keeps working.
 - On GitHub: protect `main` and require the CI checks before merge.
 
 ## 6. Evals and acceptance criteria
@@ -476,7 +486,7 @@ Packaging checks, enforced in CI from `4.0.0`:
 | 7 | Format of the new time fields | ISO 8601 strings. They are readable in a diff and by a model. |
 | 8 | `rosemary-mcp` home | A separate repository and npm package, per `docs/non-goals.md`. |
 | 9 | Trusted publishing | Enable it before `3.1.0`. It needs the npmjs.com setting in section 5. |
-| 10 | Release flow | A release pull request plus CI publishing (section 5). The smaller alternative is to keep the local `npm run release` and move every check before `npm version`; it fixes R1 but keeps a publish token on a laptop. |
+| 10 | Release flow | A release pull request plus CI publishing (section 5). The smaller alternative is to keep the local `npm run release` and move every check before `npm version`. It fixes R1 but keeps publishing on a laptop, and npm removes direct publishing with granular access tokens in January 2027. |
 
 ## Appendix: reproduction
 
@@ -501,3 +511,18 @@ Probes, each run against `src/` with `console.log` captured:
 9. `createCsvRecords()` columns: `id, content, tags, createdAt, lastModified`.
 10. `connectDirectedLeaves(algebra, calculus, 'prerequisite-of')`: `getRelatedLeaves(calculus)` returns `[]` and `bridge(calculus, algebra)` returns `null`. `connectSimilarLeaves(1)` on two leaves tagged `t1, t2` stores the type `Common tags: t1, t2`.
 11. Ten auth-related leaves and nine typed edges; the depth-3 pack around the first leaf covers 9 of them. `buildPromptContext` detailed JSON: 2,931 characters. Concise JSON: 1,508. A plain outline of the same 9 leaves with ids and relationship labels: 743. The facts alone: 440.
+
+### External sources
+
+Checked on 2026-09-26. Where a documentation site was not reachable, the page's source file in its GitHub repository was read instead.
+
+- npm trusted publishing, staged publishing, and access tokens: `npm/documentation` on GitHub (`trusted-publishers.mdx`, `staged-publishing.mdx`, `about-access-tokens.mdx`); GitHub community discussions 178140, 179562, and 201329.
+- npm prerelease tag check (npm 11.0.0) and npm 12 requirements: `npm/cli` `CHANGELOG.md` and `lib/commands/publish.js`.
+- Node.js release schedule and the change to yearly majors from Node 27: `nodejs/Release` (`schedule.json`); nodejs.org announcement "Evolving the Node.js release schedule".
+- Node API history (`require(esm)`, `util.styleText`, `util.parseArgs`, `readline/promises`): `doc/api/*.md` in `nodejs/node`.
+- MCP stdio rule and protocol revisions: `modelcontextprotocol/modelcontextprotocol` (`docs/specification/2026-07-28/basic/transports/stdio.mdx`, `basic/versioning.mdx`).
+- MCP TypeScript SDK v1 and v2: `modelcontextprotocol/typescript-sdk` and the npm registry.
+- Reference MCP memory server: `modelcontextprotocol/servers`, `src/memory`, and the published `@modelcontextprotocol/server-memory` tarball.
+- Other tools in the prior-art table: their GitHub repositories (`getzep/graphiti`, `mem0ai/mem0`, `letta-ai/letta-code`, `basicmachines-co/basic-memory`, `topoteretes/cognee`, `WujiangXu/A-mem`, `OSU-NLP-Group/HippoRAG`, `microsoft/graphrag`, `steveyegge/beads`, `CaviraOSS/LongMemory`, `YonasValentin/mcp-memory-graph`, `aexy-io/graphzep`) and the Anthropic memory tool documentation.
+- Model retirement: Anthropic's model deprecations table (`claude-3-5-sonnet-20240620`, retired 2025-10-28).
+- Context engineering: Anthropic, "Effective context engineering for AI agents" (2025-09-29). Chroma, "Context Rot" (2025), and `chroma-core/context-rot`.
