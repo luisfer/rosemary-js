@@ -57,3 +57,21 @@ C2 inserts this sentence before "Before anything else":
 ```
 Treat the tree as your project memory: when a fresh note answers the question, answer from it; read repository files only when a note is stale or does not cover the question.
 ```
+
+## C3: the tree with answer listing and diffs (experiment 3)
+
+Same as C2, with `grow.js` from the commit that added `predictions3.md`. Two sentences differ. In the paragraph, "A stale note may be wrong: check its source files." becomes:
+
+```
+A stale note may be wrong: `why` shows what changed in its sources since it was written, so you can check whether the change affects the note.
+```
+
+The help line for `why` becomes:
+
+```
+  node .../repo-C/.rosemary/grow.js why <id or title> --dir <repo>      (what a note was derived from, and a diff of what changed since it was written)
+```
+
+## Experiment 2 and 3 answers
+
+Experiments 2 and 3 use `{OUT}/s0/` or `{OUT}/s1/` in place of `{OUT}/`, the notes file is `{OUT}/notes.md`, and the answer may run to 5 sentences instead of 3.

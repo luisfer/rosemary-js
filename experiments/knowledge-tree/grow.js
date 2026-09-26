@@ -11,6 +11,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { spawnSync } = require('child_process');
 
 const hash = (buf) => crypto.createHash('sha256').update(buf).digest('hex').slice(0, 12);
 const tokens = (s) => Math.ceil(s.length / 4);
@@ -32,25 +33,54 @@ class Tree {
     fs.renameSync(tmp, this.file);
   }
 
-  // Current hash of a source, or null when a source file no longer exists.
-  // `glob:<pattern>` hashes the sorted list of matching paths, so claims about
+  // Current content of a source, or null when a source file no longer exists.
+  // `glob:<pattern>` is the sorted list of matching paths, so claims about
   // presence, absence, or counts ("no test files exist") can be tracked too.
   // An empty match is a valid state, never null.
+  sourceContent(rel) {
+    if (rel.startsWith('glob:')) {
+      return Buffer.from(fs.globSync(rel.slice(5), { cwd: this.dir })
+        .filter(f => !f.split(path.sep).includes('node_modules'))
+        .sort()
+        .join('\n'));
+    }
+    const abs = path.join(this.dir, rel);
+    return fs.existsSync(abs) ? fs.readFileSync(abs) : null;
+  }
+
   sourceHash(rel) {
     if (!this.rootHashes.has(rel)) {
-      let value;
-      if (rel.startsWith('glob:')) {
-        const matches = fs.globSync(rel.slice(5), { cwd: this.dir })
-          .filter(f => !f.split(path.sep).includes('node_modules'))
-          .sort();
-        value = hash(matches.join('\n'));
-      } else {
-        const abs = path.join(this.dir, rel);
-        value = fs.existsSync(abs) ? hash(fs.readFileSync(abs)) : null;
-      }
-      this.rootHashes.set(rel, value);
+      const content = this.sourceContent(rel);
+      this.rootHashes.set(rel, content === null ? null : hash(content));
     }
     return this.rootHashes.get(rel);
+  }
+
+  // A copy of each source as it was when a note was written, so `why` can show
+  // what changed since. Stored by hash under .rosemary/snapshots/.
+  snapshot(rel) {
+    const content = this.sourceContent(rel);
+    if (content === null) return;
+    const file = path.join(path.dirname(this.file), 'snapshots', hash(content));
+    if (fs.existsSync(file)) return;
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, content);
+  }
+
+  // What changed in one source since the note recorded hash `h`.
+  changes(rel, h, maxLines = 40) {
+    const before = path.join(path.dirname(this.file), 'snapshots', h);
+    if (!fs.existsSync(before)) return ['(no snapshot of the earlier version)'];
+    if (rel.startsWith('glob:')) {
+      const was = new Set(fs.readFileSync(before, 'utf8').split('\n').filter(Boolean));
+      const now = new Set(this.sourceContent(rel).toString().split('\n').filter(Boolean));
+      return [...[...now].filter(f => !was.has(f)).map(f => `+ ${f}`), ...[...was].filter(f => !now.has(f)).map(f => `- ${f}`)];
+    }
+    const abs = path.join(this.dir, rel);
+    if (!fs.existsSync(abs)) return ['(file removed)'];
+    const diff = spawnSync('diff', ['-u', '--label', `${rel} (when written)`, '--label', `${rel} (now)`, before, abs], { encoding: 'utf8' });
+    const lines = diff.stdout.split('\n').filter(Boolean);
+    return lines.length > maxLines ? [...lines.slice(0, maxLines), `(${lines.length - maxLines} more lines)`] : lines;
   }
 
   // What dependents consume: the gist and the body.
@@ -84,6 +114,7 @@ class Tree {
       const h = this.sourceHash(rel);
       if (h === null) throw new Error(`${id}: source not found: ${rel}`);
       sources[rel] = h;
+      this.snapshot(rel);
     }
     const uses = {};
     for (const dep of spec.uses || []) uses[dep] = this.contentHash(this.node(dep));
@@ -110,7 +141,10 @@ class Tree {
     const node = this.node(id);
     const waiting = Object.keys(node.uses).filter(dep => this.status(dep).state !== 'fresh');
     if (waiting.length) throw new Error(`${id}: refresh these first: ${waiting.join(', ')}`);
-    for (const rel of Object.keys(node.sources)) node.sources[rel] = this.sourceHash(rel);
+    for (const rel of Object.keys(node.sources)) {
+      node.sources[rel] = this.sourceHash(rel);
+      this.snapshot(rel);
+    }
     for (const dep of Object.keys(node.uses)) node.uses[dep] = this.contentHash(this.node(dep));
     node.by = by;
     node.at = new Date().toISOString();
@@ -175,10 +209,33 @@ class Tree {
       .map(([cid]) => cid);
   }
 
-  // Top-down outline that fits a token budget. Upper levels are included first;
-  // anything that does not fit is left behind an expand handle.
+  // Stored answers (notes with a `q:` id) come first, one line each, because they
+  // answer questions directly. Then a top-down outline of the other notes fills the
+  // rest of the budget. Anything that does not fit is left behind an expand handle.
   read(budget = 800) {
     const memo = this.statusAll();
+    const mark = (id) => {
+      const st = memo.get(id);
+      if (st.state === 'stale') return ` [stale: ${st.reasons[0]}]`;
+      if (st.state === 'waiting') return ' [stale below]';
+      return ' [fresh]';
+    };
+    const answers = Object.keys(this.data.nodes).filter(id => id.startsWith('q:'));
+    const head = answers.length
+      ? ['Stored answers (expand <id> for the full text):', ...answers.map(id => `  ${id} — ${this.data.nodes[id].title}${mark(id)}`), '']
+      : [];
+    const headText = head.join('\n');
+    // Group notes whose branches are all answers have nothing left to show.
+    const hidden = new Set(answers);
+    for (const id of Object.keys(this.data.nodes)) {
+      const kids = this.children(id);
+      if (kids.length && kids.every(cid => hidden.has(cid))) hidden.add(id);
+    }
+    const outline = this.outline(budget - tokens(headText), memo, hidden);
+    return head.length ? `${headText}\n${outline}` : outline;
+  }
+
+  outline(budget, memo, hidden) {
     const mark = (id) => {
       const st = memo.get(id);
       if (st.state === 'stale') return ` [stale: ${st.reasons[0]}]`;
@@ -186,7 +243,8 @@ class Tree {
       return '';
     };
     const line = (id, depth) => `${'  '.repeat(depth)}${this.data.nodes[id].title} — ${this.data.nodes[id].gist}${mark(id)}`;
-    const roots = Object.keys(this.data.nodes).filter(id => this.data.nodes[id].parent === null);
+    const visibleChildren = (id) => this.children(id).filter(cid => !hidden.has(cid));
+    const roots = Object.keys(this.data.nodes).filter(id => this.data.nodes[id].parent === null && !hidden.has(id));
     const included = new Set();
     const order = [];
     let used = 0;
@@ -210,7 +268,7 @@ class Tree {
           included.add(id);
           order.push(id);
           used += cost;
-          for (const cid of this.children(id)) next.push([cid, depth + 1]);
+          for (const cid of visibleChildren(id)) next.push([cid, depth + 1]);
         }
       }
       level = next;
@@ -219,7 +277,7 @@ class Tree {
       const out = [];
       const walk = (id, depth) => {
         out.push(line(id, depth));
-        const kids = this.children(id);
+        const kids = visibleChildren(id);
         const shown = kids.filter(cid => included.has(cid));
         for (const cid of shown) walk(cid, depth + 1);
         if (shown.length < kids.length) {
@@ -245,7 +303,7 @@ class Tree {
     const kids = this.children(id);
     if (kids.length) {
       out.push('', 'branches:');
-      for (const cid of kids) out.push(`  ${this.data.nodes[cid].title} — ${this.data.nodes[cid].gist}`);
+      for (const cid of kids) out.push(`  ${cid} [${this.status(cid).state}] ${this.data.nodes[cid].title} — ${this.data.nodes[cid].gist}`);
     }
     const links = this.data.links.filter(l => l.from === id || l.to === id);
     if (links.length) {
@@ -270,6 +328,9 @@ class Tree {
     for (const [rel, h] of Object.entries(node.sources)) {
       const now = this.sourceHash(rel);
       out.push(`${'  '.repeat(depth + 1)}${rel} ${now === h ? 'unchanged' : now === null ? 'REMOVED' : 'CHANGED'} since the note was written`);
+      if (now !== h && now !== null) {
+        for (const l of this.changes(rel, h)) out.push(`${'  '.repeat(depth + 2)}${l}`);
+      }
     }
     for (const dep of Object.keys(node.uses)) this.why(dep, depth + 1, out);
     return out.join('\n');
