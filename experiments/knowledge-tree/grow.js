@@ -110,7 +110,10 @@ class Tree {
   write(id, spec) {
     const prev = this.data.nodes[id];
     const sources = {};
-    for (const rel of spec.sources || []) {
+    // Paths are stored relative to the tree's directory; agents often pass absolute ones.
+    const rels = (spec.sources || []).map(rel =>
+      (!rel.startsWith('glob:') && path.isAbsolute(rel) ? path.relative(this.dir, rel) : rel));
+    for (const rel of rels) {
       const h = this.sourceHash(rel);
       if (h === null) throw new Error(`${id}: source not found: ${rel}`);
       sources[rel] = h;
@@ -213,6 +216,7 @@ class Tree {
   // answer questions directly. Then a top-down outline of the other notes fills the
   // rest of the budget. Anything that does not fit is left behind an expand handle.
   read(budget = 800) {
+    if (!Object.keys(this.data.nodes).length) return 'No notes yet.';
     const memo = this.statusAll();
     const mark = (id) => {
       const st = memo.get(id);
@@ -378,7 +382,11 @@ if (require.main === module) {
   else if (cmd === 'expand') print(tree.expand(tree.resolve(arg)));
   else if (cmd === 'why') print(tree.why(tree.resolve(arg)));
   else if (cmd === 'confirm') print(JSON.stringify(tree.confirm(arg, opt('by', 'agent'))));
-  else if (cmd === 'write') print(JSON.stringify(tree.write(arg, JSON.parse(fs.readFileSync(opt('spec'), 'utf8')))));
+  else if (cmd === 'write') {
+    // --spec - reads the note from standard input.
+    const spec = opt('spec') === '-' ? fs.readFileSync(0, 'utf8') : fs.readFileSync(opt('spec'), 'utf8');
+    print(JSON.stringify(tree.write(arg, JSON.parse(spec))));
+  }
   else if (cmd === 'sizes') print(JSON.stringify(tree.sizes(), null, 2));
   else if (cmd === 'todo' || cmd === 'status') {
     const { ready, later, fresh } = tree.todo();

@@ -1,0 +1,55 @@
+{
+  "about": "Experiment 4. Twelve sessions in a row on one copy of the repository per timeline. The code changes between some sessions ('changesBefore'). Question texts are in questions2.json. 'keys' gives the reference answer per question and repository state; 'outdated' gives answers that were true in an earlier state and that a memory could still hold.",
+  "states": {
+    "t0": "the repository at the start",
+    "t1": "after c1: renameTag added to src/Rosemary.js and index.d.ts",
+    "t2": "after c1 and c2: a stats command added to src/cli.js",
+    "t3": "after c1, c2, and c3: test/integration/export.test.js added"
+  },
+  "changesBefore": { "5": "c1", "7": "c2", "9": "c3" },
+  "schedule": [
+    { "session": 1, "state": "t0", "qid": "unsaved", "kind": "first" },
+    { "session": 2, "state": "t0", "qid": "data_file", "kind": "first" },
+    { "session": 3, "state": "t0", "qid": "untested", "kind": "first" },
+    { "session": 4, "state": "t0", "qid": "unsaved", "kind": "repeat, unchanged inputs" },
+    { "session": 5, "state": "t1", "qid": "unsaved", "kind": "repeat, answer changed" },
+    { "session": 6, "state": "t1", "qid": "data_file", "kind": "repeat, input changed, answer unchanged" },
+    { "session": 7, "state": "t2", "qid": "cli_docs", "kind": "first" },
+    { "session": 8, "state": "t2", "qid": "untested", "kind": "repeat, answer changed" },
+    { "session": 9, "state": "t3", "qid": "untested", "kind": "repeat, answer changed" },
+    { "session": 10, "state": "t3", "qid": "unsaved", "kind": "repeat, unchanged inputs" },
+    { "session": 11, "state": "t3", "qid": "data_file", "kind": "repeat, input changed, answer unchanged" },
+    { "session": 12, "state": "t3", "qid": "cli_docs", "kind": "repeat, unchanged inputs" }
+  ],
+  "keys": {
+    "unsaved": {
+      "t0": "addTags, importData, importObject, importFromJSON, and importFromCSV (through its helper processCsvImport). Naming processCsvImport separately is fine, and so is adding loadData with an existing file. Every other method that changes data saves when autoSave is on.",
+      "t1": "addTags, importData, importObject, importFromJSON, importFromCSV (through its helper processCsvImport), and renameTag. Naming processCsvImport separately is fine, and so is adding loadData with an existing file.",
+      "t3": "addTags, importData, importObject, importFromJSON, importFromCSV (through its helper processCsvImport), and renameTag. Naming processCsvImport separately is fine, and so is adding loadData with an existing file."
+    },
+    "data_file": {
+      "t0": "CLI: the -d/--data-file option, then ROSEMARY_DATA_FILE. API server: ROSEMARY_DATA_FILE only. scripts/visualize.js: ROSEMARY_DATA_FILE only. Constructor: options.dataFile. Every default is rosemary-data.json in the current working directory (process.cwd()).",
+      "t1": "CLI: the -d/--data-file option, then ROSEMARY_DATA_FILE. API server: ROSEMARY_DATA_FILE only. scripts/visualize.js: ROSEMARY_DATA_FILE only. Constructor: options.dataFile. Every default is rosemary-data.json in the current working directory (process.cwd()).",
+      "t3": "CLI: the -d/--data-file option, then ROSEMARY_DATA_FILE. API server: ROSEMARY_DATA_FILE only. scripts/visualize.js: ROSEMARY_DATA_FILE only. Constructor: options.dataFile. Every default is rosemary-data.json in the current working directory (process.cwd())."
+    },
+    "untested": {
+      "t0": "7 methods: updateLeaf, getAllTags, getLeavesByConnection, exportToJSON, exportToCSV, importFromCSV, getLeafContentAsHTML.",
+      "t2": "8 methods: updateLeaf, getAllTags, getLeavesByConnection, exportToJSON, exportToCSV, importFromCSV, getLeafContentAsHTML, and renameTag.",
+      "t3": "6 methods: renameTag, getAllTags, getLeavesByConnection, exportToCSV, importFromCSV, getLeafContentAsHTML. test/integration/export.test.js calls exportToJSON and updateLeaf."
+    },
+    "cli_docs": {
+      "t2": "Defined but not listed: stats, rosemary, and hello. Every listed command is defined.",
+      "t3": "Defined but not listed: stats, rosemary, and hello. Every listed command is defined."
+    }
+  },
+  "outdated": {
+    "unsaved": {
+      "t1": ["addTags, importData, importObject, importFromJSON, and importFromCSV only, without renameTag (true in t0)."],
+      "t3": ["addTags, importData, importObject, importFromJSON, and importFromCSV only, without renameTag (true in t0)."]
+    },
+    "untested": {
+      "t2": ["The 7 methods updateLeaf, getAllTags, getLeavesByConnection, exportToJSON, exportToCSV, importFromCSV, getLeafContentAsHTML, without renameTag (true in t0)."],
+      "t3": ["The 7 methods of t0, without renameTag and with updateLeaf and exportToJSON.", "The 8 methods of t2, including updateLeaf and exportToJSON."]
+    }
+  }
+}
